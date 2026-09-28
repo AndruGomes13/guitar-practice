@@ -5,14 +5,21 @@ interface Props {
   pitch: Pitch | null;
   /** Input RMS level, 0–1. */
   level: number;
+  /** RMS level a note must reach to count; drawn as a line on the level meter. */
+  threshold?: number;
   spelling: Spelling;
 }
 
+// Map -54 dB .. -14 dB to 0..1 so quiet rooms and loud strums both read sensibly.
+function levelToPercent(rms: number): number {
+  const db = 20 * Math.log10(Math.max(rms, 1e-6));
+  return Math.round(Math.min(1, Math.max(0, (db + 54) / 40)) * 100);
+}
+
 /** Shows the note the microphone hears, how in tune it is, and the input level. */
-export function PitchMeter({ pitch, level, spelling }: Props) {
-  // Map -54 dB .. -14 dB to 0..1 so quiet rooms and loud strums both read sensibly.
-  const db = 20 * Math.log10(Math.max(level, 1e-6));
-  const levelPct = Math.round(Math.min(1, Math.max(0, (db + 54) / 40)) * 100);
+export function PitchMeter({ pitch, level, threshold, spelling }: Props) {
+  const levelPct = levelToPercent(level);
+  const loudEnough = threshold === undefined || level >= threshold;
   const name = pitch
     ? pcName(pitch.midi, spelling === 'flat' ? 'flat' : 'sharp') + midiOctave(pitch.midi)
     : '—';
@@ -42,7 +49,17 @@ export function PitchMeter({ pitch, level, spelling }: Props) {
           </span>
         </div>
         <div className="pm-level" aria-label="Input level">
-          <div className="pm-level-fill" style={{ width: `${levelPct}%` }} />
+          <div
+            className={`pm-level-fill${loudEnough ? '' : ' pm-level-quiet'}`}
+            style={{ width: `${levelPct}%` }}
+          />
+          {threshold !== undefined ? (
+            <div
+              className="pm-level-threshold"
+              style={{ left: `${levelToPercent(threshold)}%` }}
+              title="Notes must reach this line"
+            />
+          ) : null}
         </div>
       </div>
     </div>

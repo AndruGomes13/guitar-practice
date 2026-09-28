@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { Chip, Field, Segmented, Sheet } from '../../components/controls';
+import { FretRange } from '../../components/guitarControls';
 import { ModuleNav } from '../../components/ModuleNav';
 import { resolveTab, type TabDef } from '../../components/tabs';
-import { MAX_FRET, STANDARD_TUNING } from '../../lib/guitar';
+import { MIC_SENSITIVITY, MIC_SENSITIVITY_ORDER } from '../../lib/pitch';
 import { usePersistentState } from '../../lib/usePersistentState';
 import type { ModuleProps } from '../types';
 import { FindMode } from './FindMode';
 import { NameMode } from './NameMode';
 import { PlayMode } from './PlayMode';
+import { PracticeOptions } from './PracticeOptions';
 import {
   DEFAULT_FRETBOARD_SETTINGS,
   noteTargets,
   positionTargets,
+  questionKey,
   type FretboardSettings,
 } from './settings';
 
@@ -37,8 +40,10 @@ export default function FretboardModule({ tab }: ModuleProps) {
 
   const hasQuestions =
     active === 'name' ? positionTargets(settings).length > 0 : noteTargets(settings).length > 0;
-  // Remount the exercise when settings change so it starts with a valid question.
-  const key = JSON.stringify(settings);
+  // Restart the exercise when the possible questions change, so it starts with a valid one.
+  // Play handles this itself so the mic stays on. Find also restarts on the string toggle,
+  // because that changes the set of places to tap.
+  const key = questionKey(settings);
 
   return (
     <>
@@ -49,6 +54,7 @@ export default function FretboardModule({ tab }: ModuleProps) {
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <p className="muted intro">{INTROS[active]}</p>
+      <PracticeOptions settings={settings} onChange={setSettings} showScope={active !== 'name'} />
 
       {!hasQuestions ? (
         <div className="card empty-state">
@@ -58,9 +64,9 @@ export default function FretboardModule({ tab }: ModuleProps) {
           </button>
         </div>
       ) : active === 'play' ? (
-        <PlayMode key={key} settings={settings} />
+        <PlayMode settings={settings} />
       ) : active === 'find' ? (
-        <FindMode key={key} settings={settings} />
+        <FindMode key={`${key}|${settings.scope}`} settings={settings} />
       ) : (
         <NameMode key={key} settings={settings} />
       )}
@@ -77,67 +83,17 @@ interface FormProps {
   onChange: (settings: FretboardSettings) => void;
 }
 
-const fretOptions = (from: number, to: number) =>
-  Array.from({ length: to - from + 1 }, (_, i) => from + i);
-
 function FretboardSettingsForm({ settings, onChange }: FormProps) {
   const set = (patch: Partial<FretboardSettings>) => onChange({ ...settings, ...patch });
 
   return (
     <div className="stack">
-      <Field label="Strings">
-        <div className="chip-row">
-          {STANDARD_TUNING.map((s, i) => {
-            const checked = settings.strings.includes(i);
-            return (
-              <Chip
-                key={i}
-                checked={checked}
-                disabled={checked && settings.strings.length === 1}
-                onChange={(on) =>
-                  set({
-                    strings: STANDARD_TUNING.map((_, j) => j).filter((j) =>
-                      j === i ? on : settings.strings.includes(j),
-                    ),
-                  })
-                }
-              >
-                {s.label}
-              </Chip>
-            );
-          })}
-        </div>
-      </Field>
-
       <Field label="Frets">
-        <div className="fret-range">
-          <label>
-            From
-            <select
-              value={settings.minFret}
-              onChange={(e) => set({ minFret: Number(e.target.value) })}
-            >
-              {fretOptions(0, settings.maxFret).map((f) => (
-                <option key={f} value={f}>
-                  {f === 0 ? 'Open' : f}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            To
-            <select
-              value={settings.maxFret}
-              onChange={(e) => set({ maxFret: Number(e.target.value) })}
-            >
-              {fretOptions(Math.max(1, settings.minFret), MAX_FRET).map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <FretRange
+          minFret={settings.minFret}
+          maxFret={settings.maxFret}
+          onChange={(minFret, maxFret) => set({ minFret, maxFret })}
+        />
       </Field>
 
       <Field label="Notes">
@@ -165,15 +121,18 @@ function FretboardSettingsForm({ settings, onChange }: FormProps) {
         />
       </Field>
 
-      <Field label="Ask for notes" hint="Used by Play and Find.">
+      <Field
+        label="Mic sensitivity (Play)"
+        hint="How loud a pluck must be to count. The line on the level meter shows the threshold; if soft plucks are missed, go higher. If noise gets picked up, go lower."
+      >
         <Segmented
-          label="Ask for notes"
-          value={settings.scope}
-          onChange={(v) => set({ scope: v })}
-          options={[
-            { value: 'anywhere', label: 'Anywhere' },
-            { value: 'string', label: 'On a given string' },
-          ]}
+          label="Mic sensitivity"
+          value={settings.micSensitivity}
+          onChange={(v) => set({ micSensitivity: v })}
+          options={MIC_SENSITIVITY_ORDER.map((level) => ({
+            value: level,
+            label: MIC_SENSITIVITY[level].label,
+          }))}
         />
       </Field>
 

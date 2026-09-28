@@ -1,29 +1,30 @@
-import { useMemo, useState } from 'react';
-import { useMicPitch } from '../../audio/useMicPitch';
+import { useEffect, useState } from 'react';
+import { useMicFrames, useMicPitch, type MicControls } from '../../audio/useMicPitch';
 import { Fretboard, type FretMarker } from '../../components/Fretboard';
 import { MicIcon } from '../../components/icons';
 import { NoteStatsStrip } from '../../components/NoteStatsStrip';
 import { PitchMeter } from '../../components/PitchMeter';
 import { useTimeout } from '../../lib/hooks';
 import { midiOctave, mod12, pcName } from '../../lib/music';
-import { StableNoteTracker, type Pitch } from '../../lib/pitch';
-import { groupStats, pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
+import { MIC_SENSITIVITY, StableNoteTracker, type Pitch } from '../../lib/pitch';
+import { groupStats, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import {
   labelSpelling,
-  noteTargets,
   pcOfTargetId,
+  pickTarget,
+  questionKey,
   spellForPrompt,
-  stringName,
-  targetId,
   targetPositions,
+  targetStatsId,
   type FretboardSettings,
   type NoteTarget,
 } from './settings';
+import { StringPill } from './StringPill';
 
 interface Prompt {
   target: NoteTarget;
-  label: string;
+  preferFlat: boolean;
   shownAt: number;
   misses: number;
   revealed: boolean;
@@ -34,25 +35,32 @@ interface Heard {
   correct: boolean;
 }
 
-function makePrompt(target: NoteTarget, settings: FretboardSettings, now: number): Prompt {
-  return {
-    target,
-    label: spellForPrompt(target.pc, settings.spelling),
-    shownAt: now,
-    misses: 0,
-    revealed: false,
-  };
+function makePrompt(target: NoteTarget, now: number): Prompt {
+  return { target, preferFlat: Math.random() < 0.5, shownAt: now, misses: 0, revealed: false };
 }
 
 /** Held briefly so the display doesn't flicker between frames. */
 const PITCH_HOLD_MS = 400;
 
+/** Pause after a correct note: enough to see the green flash, or glance at the positions. */
+const NEXT_NOTE_DELAY_MS = 400;
+const NEXT_NOTE_DELAY_WITH_POSITIONS_MS = 800;
+
 /** Shows a note; you play it on the guitar and the microphone checks it. */
 export function PlayMode({ settings }: { settings: FretboardSettings }) {
-  const items = useMemo(() => noteTargets(settings), [settings]);
+  // The mic lives here so it stays on when a settings change restarts the questions.
+  const mic = useMicPitch();
+  const { detector } = mic;
+  useEffect(() => {
+    detector?.setThresholds(MIC_SENSITIVITY[settings.micSensitivity]);
+  }, [detector, settings.micSensitivity]);
+  return <PlayQuestions key={questionKey(settings)} settings={settings} mic={mic} />;
+}
+
+function PlayQuestions({ settings, mic }: { settings: FretboardSettings; mic: MicControls }) {
   const [stats, setStats] = usePersistentState<StatsMap>('fretboard.stats.play', {});
   const [prompt, setPrompt] = useState(() =>
-    makePrompt(pickWeighted(items, targetId, stats), settings, 0),
+    makePrompt(pickTarget(settings, stats), performance.now()),
   );
   const [solved, setSolved] = useState(false);
   const [heard, setHeard] = useState<Heard | null>(null);
@@ -65,17 +73,11 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
   const [session, setSession] = useState({ answered: 0, firstTry: 0, totalMs: 0 });
   const timeout = useTimeout();
 
-  const advance = (currentStats: StatsMap, previousId: string) => {
+  const advance = (currentStats: StatsMap, previous: NoteTarget) => {
     timeout.cancel();
     // The last note may still be ringing; don't judge it against the new question.
     tracker.ignoreRingingNote();
-    setPrompt(
-      makePrompt(
-        pickWeighted(items, targetId, currentStats, previousId),
-        settings,
-        performance.now(),
-      ),
-    );
+    setPrompt(makePrompt(pickTarget(settings, currentStats, previous), performance.now()));
     setSolved(false);
     setHeard(null);
   };
@@ -83,7 +85,8 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
   const onNote = (midi: number, now: number) => {
     if (solved) return;
     // Only the pitch class is checked: the mic can't tell which string a note was played
-    // on, and phone mics often mistake low notes for the octave above.
+    // on (that part is on the honor system), and phone mics often mistake low notes for
+    // the octave above.
     if (mod12(midi) !== prompt.target.pc) {
       setHeard({ midi, correct: false });
       setPrompt({ ...prompt, misses: prompt.misses + 1 });
@@ -91,7 +94,8 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
     }
     const firstTry = prompt.misses === 0 && !prompt.revealed;
     const ms = now - prompt.shownAt;
-    const newStats = recordResult(stats, prompt.target.id, firstTry, firstTry ? ms : undefined);
+    const statsId = targetStatsId(prompt.target, settings.scope);
+    const newStats = recordResult(stats, statsId, firstTry, firstTry ? ms : undefined);
     setStats(newStats);
     setSolved(true);
     setHeard({ midi, correct: true });
@@ -100,10 +104,13 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
       firstTry: s.firstTry + (firstTry ? 1 : 0),
       totalMs: s.totalMs + (firstTry ? ms : 0),
     }));
-    timeout.schedule(() => advance(newStats, prompt.target.id), settings.showAnswer ? 1800 : 900);
+    timeout.schedule(
+      () => advance(newStats, prompt.target),
+      settings.showAnswer ? NEXT_NOTE_DELAY_WITH_POSITIONS_MS : NEXT_NOTE_DELAY_MS,
+    );
   };
 
-  const mic = useMicPitch((frame) => {
+  useMicFrames(mic.detector, (frame) => {
     const now = performance.now();
     setDisplay((d) =>
       frame.pitch
@@ -121,17 +128,19 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
   };
 
   const skip = () => {
-    const newStats = recordResult(stats, prompt.target.id, false);
+    const newStats = recordResult(stats, targetStatsId(prompt.target, settings.scope), false);
     setStats(newStats);
     setSession((s) => ({ ...s, answered: s.answered + 1 }));
-    advance(newStats, prompt.target.id);
+    advance(newStats, prompt.target);
   };
 
   const spelling = labelSpelling(settings.spelling);
+  const label = spellForPrompt(prompt.target.pc, settings.spelling, prompt.preferFlat);
+  const onString = settings.scope === 'string';
   const positions = targetPositions(prompt.target, settings);
   const showPositions = (solved && settings.showAnswer) || prompt.revealed;
   const markers: FretMarker[] = showPositions
-    ? positions.map((p) => ({ ...p, tone: solved ? 'correct' : 'hint', label: prompt.label }))
+    ? positions.map((p) => ({ ...p, tone: solved ? 'correct' : 'hint', label }))
     : [];
   const listening = mic.status === 'listening';
   const heardName = heard ? pcName(heard.midi, spelling) + midiOctave(heard.midi) : '';
@@ -152,17 +161,22 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
 
       <section className={`card prompt-card${solved ? ' prompt-correct' : ''}`}>
         <div className="prompt-kicker">Play</div>
-        <div className="prompt-main">{prompt.label}</div>
-        <div className="prompt-sub">
-          {prompt.target.string === null
-            ? 'anywhere on the neck'
-            : `on the ${stringName(prompt.target.string)} string`}
-        </div>
+        <div className="prompt-main">{label}</div>
+        {onString ? (
+          <StringPill string={prompt.target.string} />
+        ) : (
+          <div className="prompt-sub">on any string</div>
+        )}
       </section>
 
       {listening ? (
         <>
-          <PitchMeter pitch={display.pitch} level={display.level} spelling={settings.spelling} />
+          <PitchMeter
+            pitch={display.pitch}
+            level={display.level}
+            threshold={MIC_SENSITIVITY[settings.micSensitivity].minRms}
+            spelling={settings.spelling}
+          />
           <div className="feedback" aria-live="polite">
             {heard === null ? (
               <p className="muted">Listening… pluck the note.</p>
@@ -202,7 +216,8 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
           {mic.error ? <p className="feedback-bad small">{mic.error}</p> : null}
           <p className="muted small center">
             Allow microphone access, then play each note on your guitar. Works best in a quiet room.
-            The mic checks the note name, not which string you play it on.
+            The mic checks the note name; it can’t tell which string you used, so that part is up to
+            you.
           </p>
         </div>
       )}
@@ -212,7 +227,7 @@ export function PlayMode({ settings }: { settings: FretboardSettings }) {
         maxFret={settings.maxFret}
         markers={markers}
         activeStrings={settings.strings}
-        highlightString={prompt.target.string}
+        highlightString={onString ? prompt.target.string : null}
       />
 
       <NoteStatsStrip

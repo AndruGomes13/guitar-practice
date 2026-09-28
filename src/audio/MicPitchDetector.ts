@@ -1,4 +1,9 @@
-import { PitchAnalyzer, type AudioFrame } from '../lib/pitch';
+import {
+  MIC_SENSITIVITY,
+  PitchAnalyzer,
+  type AudioFrame,
+  type DetectionThresholds,
+} from '../lib/pitch';
 
 const BUFFER_SIZE = 4096; // ~85 ms at 48 kHz: several periods of the low E string.
 const ANALYSIS_INTERVAL_MS = 30;
@@ -16,7 +21,15 @@ export class MicPitchDetector {
   private timer: number | undefined;
   private wakeLock: WakeLockSentinel | null = null;
   private stopped = false;
+  private analyzer: PitchAnalyzer | null = null;
+  private thresholds: DetectionThresholds = MIC_SENSITIVITY.medium;
   private readonly listeners = new Set<FrameListener>();
+
+  /** Changes how loud a note must be to count; takes effect immediately. */
+  setThresholds(thresholds: DetectionThresholds): void {
+    this.thresholds = thresholds;
+    if (this.analyzer) this.analyzer.thresholds = thresholds;
+  }
 
   async start(): Promise<void> {
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
@@ -54,7 +67,8 @@ export class MicPitchDetector {
     }
 
     const buffer = new Float32Array(analyser.fftSize);
-    const pitchAnalyzer = new PitchAnalyzer(analyser.fftSize);
+    const pitchAnalyzer = new PitchAnalyzer(analyser.fftSize, this.thresholds);
+    this.analyzer = pitchAnalyzer;
     this.timer = window.setInterval(() => {
       analyser.getFloatTimeDomainData(buffer);
       const frame = pitchAnalyzer.analyze(buffer, ctx.sampleRate);

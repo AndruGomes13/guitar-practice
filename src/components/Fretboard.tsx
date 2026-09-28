@@ -90,7 +90,13 @@ export function Fretboard({
 
   return (
     <div className={`fretboard${vertical ? ' fretboard-vertical' : ''}`}>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label={label}
+        // A few frets shouldn't scale up to giant markers on a wide screen.
+        style={vertical ? undefined : { maxWidth: width * 1.5 }}
+      >
         {/* Wood (the open-string area in front of the nut has none) */}
         <rect
           className="fb-wood"

@@ -11,18 +11,20 @@ export interface GuitarString {
   openMidi: number;
   /** Short label as usually written on tab ("E", "A", ... "e"). */
   label: string;
-  /** Human name, e.g. "A (5th)". */
+  /** Human name, e.g. "low E" or "A". */
   name: string;
+  /** Conventional string number, e.g. "6th" for the low E. */
+  ordinal: string;
 }
 
 /** Standard tuning, low to high. */
 export const STANDARD_TUNING: readonly GuitarString[] = [
-  { openMidi: 40, label: 'E', name: 'low E (6th)' },
-  { openMidi: 45, label: 'A', name: 'A (5th)' },
-  { openMidi: 50, label: 'D', name: 'D (4th)' },
-  { openMidi: 55, label: 'G', name: 'G (3rd)' },
-  { openMidi: 59, label: 'B', name: 'B (2nd)' },
-  { openMidi: 64, label: 'e', name: 'high e (1st)' },
+  { openMidi: 40, label: 'E', name: 'low E', ordinal: '6th' },
+  { openMidi: 45, label: 'A', name: 'A', ordinal: '5th' },
+  { openMidi: 50, label: 'D', name: 'D', ordinal: '4th' },
+  { openMidi: 55, label: 'G', name: 'G', ordinal: '3rd' },
+  { openMidi: 59, label: 'B', name: 'B', ordinal: '2nd' },
+  { openMidi: 64, label: 'e', name: 'high e', ordinal: '1st' },
 ];
 
 export const STRING_COUNT = STANDARD_TUNING.length;

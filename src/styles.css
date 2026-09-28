@@ -127,6 +127,95 @@ h3 {
   margin: 4px 4px 16px;
 }
 
+.practice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.string-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.string-picker-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.string-chips {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(6, minmax(0, 64px));
+  gap: 6px;
+}
+
+.string-chips .chip {
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.preset-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/* Tappable summary of the current selection (opens settings). */
+.summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.summary-meta {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.summary-edit {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.chip-sub {
+  margin-left: 3px;
+  font-size: 0.75em;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -250,6 +339,7 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  white-space: nowrap;
   min-height: 44px;
   padding: 0 18px;
   border: 1px solid transparent;
@@ -334,7 +424,7 @@ h3 {
 }
 
 .button-row > .btn {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   max-width: 220px;
 }
 
@@ -622,6 +712,24 @@ h3 {
   color: var(--muted);
 }
 
+.string-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.string-pill-name::first-letter {
+  text-transform: uppercase;
+}
+
 .prompt-correct {
   border-color: var(--good);
   background: color-mix(in srgb, var(--good) 12%, var(--surface));
@@ -653,6 +761,96 @@ h3 {
 .feedback-bad {
   color: var(--bad);
   font-weight: 600;
+}
+
+/* Interval answers */
+.interval-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.interval-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 6px 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.08s;
+}
+
+.interval-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.interval-btn:disabled {
+  cursor: default;
+}
+
+.interval-btn:disabled:not(.interval-correct, .interval-wrong) {
+  opacity: 0.5;
+}
+
+.interval-short {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.interval-name {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.interval-correct {
+  border-color: var(--good);
+  background: var(--good);
+  color: #fff;
+}
+
+.interval-wrong {
+  border-color: var(--bad);
+  background: var(--bad);
+  color: #fff;
+}
+
+.interval-correct .interval-name,
+.interval-wrong .interval-name {
+  color: rgb(255 255 255 / 0.85);
+}
+
+/* Ear training */
+.ear-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.play-button {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+
+.play-button:active {
+  transform: scale(0.95);
 }
 
 .mic-start {
@@ -969,6 +1167,7 @@ div.key {
 .fretboard svg {
   display: block;
   width: 100%;
+  margin: 0 auto;
   height: auto;
   overflow: visible;
   touch-action: manipulation;
@@ -1098,12 +1297,16 @@ div.key {
 }
 
 .fb-marker-target circle {
-  fill: var(--accent);
-  stroke: #fff;
+  fill: var(--text);
+  stroke: var(--accent);
   stroke-width: 2.5;
   transform-box: fill-box;
   transform-origin: center;
   animation: marker-pulse 0.9s ease-in-out infinite alternate;
+}
+
+.fb-marker-target text {
+  fill: var(--bg);
 }
 
 .fb-marker-hint circle {
@@ -1230,16 +1433,31 @@ div.key {
 }
 
 .pm-level {
-  height: 6px;
-  overflow: hidden;
-  border-radius: 3px;
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
   background: var(--surface-2);
 }
 
 .pm-level-fill {
   height: 100%;
+  border-radius: 4px;
   background: var(--good);
   transition: width 0.06s linear;
+}
+
+.pm-level-quiet {
+  background: var(--muted);
+}
+
+.pm-level-threshold {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--text);
+  transform: translateX(-50%);
 }
 
 /* ==========================================================================

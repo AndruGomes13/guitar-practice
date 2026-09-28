@@ -1,5 +1,6 @@
 import { pcName, type Spelling } from '../lib/music';
-import { accuracy, averageMs, type StatsMap } from '../lib/stats';
+import type { StatsMap } from '../lib/stats';
+import { StatsStrip } from './StatsStrip';
 
 interface Props {
   /** Stats keyed by pitch class (0–11). */
@@ -9,54 +10,11 @@ interface Props {
   showTimes?: boolean;
 }
 
-function rating(acc: number | null, avg: number | null): string {
-  if (acc === null) return 'unseen';
-  if (acc < 0.6) return 'weak';
-  if (acc < 0.85 || (avg !== null && avg > 5000)) return 'okay';
-  return 'strong';
-}
-
-/** One cell per note showing how well you know it. */
-export function NoteStatsStrip({ stats, spelling, onReset, showTimes = true }: Props) {
-  const hasData = Object.keys(stats).length > 0;
-  return (
-    <section className="note-stats">
-      <header className="note-stats-header">
-        <h3>How you’re doing</h3>
-        {hasData ? (
-          <button
-            type="button"
-            className="btn btn-ghost btn-small"
-            onClick={() => {
-              if (window.confirm('Reset the stats for this exercise?')) onReset();
-            }}
-          >
-            Reset
-          </button>
-        ) : null}
-      </header>
-      <div className="note-stats-grid">
-        {Array.from({ length: 12 }, (_, pc) => {
-          const stat = stats[pc];
-          const acc = accuracy(stat);
-          const avg = averageMs(stat);
-          return (
-            <div key={pc} className={`note-stat note-stat-${rating(acc, avg)}`}>
-              <div className="note-stat-name">
-                {pcName(pc, spelling === 'flat' ? 'flat' : 'sharp')}
-              </div>
-              <div className="note-stat-value">
-                {acc === null ? '–' : `${Math.round(acc * 100)}%`}
-              </div>
-              {showTimes ? (
-                <div className="note-stat-time">
-                  {avg === null ? '' : `${(avg / 1000).toFixed(1)}s`}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+/** Stats per note name, C through B. */
+export function NoteStatsStrip({ spelling, ...rest }: Props) {
+  const items = Array.from({ length: 12 }, (_, pc) => ({
+    id: `${pc}`,
+    label: pcName(pc, spelling === 'flat' ? 'flat' : 'sharp'),
+  }));
+  return <StatsStrip items={items} {...rest} />;
 }

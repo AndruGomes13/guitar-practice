@@ -7,7 +7,7 @@ import { useTimeout } from '../../lib/hooks';
 import { pcName } from '../../lib/music';
 import { groupStats, pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
-import { labelSpelling, positionTargets, stringName, type FretboardSettings } from './settings';
+import { describeString, labelSpelling, positionTargets, type FretboardSettings } from './settings';
 
 interface Question {
   position: FretPosition;
@@ -98,7 +98,7 @@ export function NameMode({ settings }: { settings: FretboardSettings }) {
       <div className="feedback" aria-live="polite">
         {!answered ? (
           <p className="muted">
-            Which note is at fret {position.fret} on the {stringName(position.string)} string?
+            Which note is at fret {position.fret} on the {describeString(position.string)}?
           </p>
         ) : correct ? (
           <p className="feedback-good">✓ {pcName(answer, settings.spelling)}</p>

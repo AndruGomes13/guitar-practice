@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { FretboardIcon, TriadIcon } from '../components/icons';
+import { FretboardIcon, IntervalIcon, TriadIcon } from '../components/icons';
 import type { PracticeModule } from './types';
 
 /**
@@ -20,5 +20,12 @@ export const MODULES: readonly PracticeModule[] = [
     description: 'Find any note on the neck. Play it on your guitar and the mic checks you.',
     icon: FretboardIcon,
     component: lazy(() => import('./fretboard/FretboardModule')),
+  },
+  {
+    id: 'intervals',
+    title: 'Intervals',
+    description: 'Recognize intervals on the fretboard and by ear, starting with just a few.',
+    icon: IntervalIcon,
+    component: lazy(() => import('./intervals/IntervalsModule')),
   },
 ];

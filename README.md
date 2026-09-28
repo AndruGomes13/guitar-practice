@@ -17,12 +17,30 @@ it can be added to your phone's home screen like an app.
 
 - **Play**: you're shown a note and play it on your guitar. The microphone detects the pitch
   and checks it.
-- **Find**: tap every place a note appears on the neck. No guitar needed.
+- **Find**: tap the note on the neck. No guitar needed.
 - **Name**: a fret is highlighted and you name the note.
 
-Every exercise keeps per-item stats in your browser. Items you miss or answer slowly come up
-more often. In the Fretboard tool, the settings (sliders icon) let you choose strings, fret
+In Play and Find, each question also tells you which string to use (e.g. "A string · 5th").
+You can switch that to "Any string". The string chips (E 6 … e 1) choose which strings
+questions come from. Both controls sit right on the practice screen, and changing them doesn't
+turn the mic off. The mic can't tell strings apart, so using the right string is up to you.
+
+If soft plucks don't register, raise **Mic sensitivity** in the settings. The line on the level
+meter shows how loud a note has to be. The settings (sliders icon) also let you choose the fret
 range, naturals only, and sharps/flats.
+
+**Intervals**
+
+- **Fretboard**: a root (R) and a second note (?) are marked on the neck, and you name the
+  interval. You can ask for intervals going up, down, or both.
+- **Ear**: two notes are played (going up, going down, or together) and you name the
+  interval. After a miss you can replay it and hear what your answer would have sounded like.
+
+Choose which intervals to practice in the settings. Start with a few (the "Beginner set" is
+m3, M3, P4, P5, P8) and add more as they get easy.
+
+Every exercise keeps per-item stats in your browser. Items you miss or answer slowly come up
+more often.
 
 ## Setup
 
@@ -69,19 +87,22 @@ src/
   router.ts            Tiny hash router (#/module/tab), so any static host works
   styles.css           All styles; design tokens at the top (dark and light themes)
   lib/                 Framework-free logic, unit tested
-    music.ts           Notes, spelling, intervals, triads
+    music.ts           Notes, spelling, triads
+    intervals.ts       Interval names and spelling (C–E♭, not C–D♯)
     guitar.ts          Tuning and fretboard positions
     pitch.ts           Pitch analysis (McLeod method via `pitchy`) and note-onset tracking
     stats.ts           Per-item stats and weighted "practice what you're weak at" picking
+    pluck.ts           Karplus–Strong plucked-string synthesis (tuned to within a few cents)
   audio/
     MicPitchDetector.ts  Microphone → pitch frames (Web Audio)
     useMicPitch.ts       React hook around it
-    synth.ts             Plucked-string synth (Karplus–Strong) for "Hear it"
+    synth.ts             Plays notes and intervals with the plucked-string synth
   components/          Fretboard (SVG), NotePicker (piano), PitchMeter, controls…
   modules/
     registry.ts        The list of practice tools shown on the home screen
     triads/            Triads tool
     fretboard/         Fretboard notes tool
+    intervals/         Intervals tool
 ```
 
 ### Adding a new practice tool
@@ -113,6 +134,5 @@ The build is a static site in `dist/`, so it can be hosted anywhere. For GitHub 
 ## Ideas for later
 
 - Triad inversions and string-set shapes (e.g. triads on strings 1-2-3)
-- Interval ear training
 - Scale and arpeggio patterns
 - Offline support (service worker)

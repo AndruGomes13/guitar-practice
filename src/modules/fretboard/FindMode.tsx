@@ -1,44 +1,41 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Fretboard, type FretMarker } from '../../components/Fretboard';
 import { NoteStatsStrip } from '../../components/NoteStatsStrip';
 import { pcAt, samePosition, type FretPosition } from '../../lib/guitar';
 import { useTimeout } from '../../lib/hooks';
 import { pcName } from '../../lib/music';
-import { groupStats, pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
+import { groupStats, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import {
   labelSpelling,
-  noteTargets,
   pcOfTargetId,
+  pickTarget,
   spellForPrompt,
-  stringName,
-  targetId,
   targetPositions,
+  targetStatsId,
   type FretboardSettings,
   type NoteTarget,
 } from './settings';
+import { StringPill } from './StringPill';
 
 interface Prompt {
   target: NoteTarget;
-  label: string;
+  preferFlat: boolean;
   misses: number;
   revealed: boolean;
 }
 
-const makePrompt = (target: NoteTarget, settings: FretboardSettings): Prompt => ({
+const makePrompt = (target: NoteTarget): Prompt => ({
   target,
-  label: spellForPrompt(target.pc, settings.spelling),
+  preferFlat: Math.random() < 0.5,
   misses: 0,
   revealed: false,
 });
 
 /** Shows a note; you tap every place it lives on the neck. No guitar needed. */
 export function FindMode({ settings }: { settings: FretboardSettings }) {
-  const items = useMemo(() => noteTargets(settings), [settings]);
   const [stats, setStats] = usePersistentState<StatsMap>('fretboard.stats.find', {});
-  const [prompt, setPrompt] = useState(() =>
-    makePrompt(pickWeighted(items, targetId, stats), settings),
-  );
+  const [prompt, setPrompt] = useState(() => makePrompt(pickTarget(settings, stats)));
   const [found, setFound] = useState<FretPosition[]>([]);
   const [wrongTap, setWrongTap] = useState<FretPosition | null>(null);
   const [done, setDone] = useState(false);
@@ -46,19 +43,21 @@ export function FindMode({ settings }: { settings: FretboardSettings }) {
   const advanceTimeout = useTimeout();
   const flashTimeout = useTimeout();
 
+  const onString = settings.scope === 'string';
   const positions = targetPositions(prompt.target, settings);
   const spelling = labelSpelling(settings.spelling);
+  const label = spellForPrompt(prompt.target.pc, settings.spelling, prompt.preferFlat);
 
-  const advance = (currentStats: StatsMap, previousId: string) => {
+  const advance = (currentStats: StatsMap, previous: NoteTarget) => {
     advanceTimeout.cancel();
-    setPrompt(makePrompt(pickWeighted(items, targetId, currentStats, previousId), settings));
+    setPrompt(makePrompt(pickTarget(settings, currentStats, previous)));
     setFound([]);
     setWrongTap(null);
     setDone(false);
   };
 
   const finish = (perfect: boolean) => {
-    const newStats = recordResult(stats, prompt.target.id, perfect);
+    const newStats = recordResult(stats, targetStatsId(prompt.target, settings.scope), perfect);
     setStats(newStats);
     setDone(true);
     setSession((s) => ({ answered: s.answered + 1, perfect: s.perfect + (perfect ? 1 : 0) }));
@@ -78,24 +77,21 @@ export function FindMode({ settings }: { settings: FretboardSettings }) {
     setFound(nowFound);
     if (nowFound.length === positions.length) {
       const newStats = finish(prompt.misses === 0 && !prompt.revealed);
-      advanceTimeout.schedule(() => advance(newStats, prompt.target.id), 1100);
+      advanceTimeout.schedule(() => advance(newStats, prompt.target), 1100);
     }
   };
 
   const markers: FretMarker[] = [];
   for (const p of positions) {
     const isFound = done || found.some((f) => samePosition(f, p));
-    if (isFound) markers.push({ ...p, tone: 'correct', label: prompt.label });
-    else if (prompt.revealed) markers.push({ ...p, tone: 'hint', label: prompt.label });
+    if (isFound) markers.push({ ...p, tone: 'correct', label });
+    else if (prompt.revealed) markers.push({ ...p, tone: 'hint', label });
   }
   if (wrongTap)
     markers.push({ ...wrongTap, tone: 'wrong', label: pcName(pcAt(wrongTap), spelling) });
 
-  const where =
-    prompt.target.string === null
-      ? `every one, ${found.length} of ${positions.length} found`
-      : `on the ${stringName(prompt.target.string)} string` +
-        (positions.length > 1 ? ` (${positions.length} places)` : '');
+  const count =
+    positions.length > 1 ? `${found.length} of ${positions.length} found` : 'tap where it is';
 
   return (
     <div className="stack">
@@ -107,16 +103,17 @@ export function FindMode({ settings }: { settings: FretboardSettings }) {
 
       <section className={`card prompt-card prompt-compact${done ? ' prompt-correct' : ''}`}>
         <div className="prompt-kicker">Find</div>
-        <div className="prompt-main">{prompt.label}</div>
-        <div className="prompt-sub">{where}</div>
+        <div className="prompt-main">{label}</div>
+        {onString ? <StringPill string={prompt.target.string} /> : null}
+        <div className="prompt-sub">{onString ? count : `every one, ${count}`}</div>
       </section>
 
       <Fretboard
         minFret={settings.minFret}
         maxFret={settings.maxFret}
         markers={markers}
-        activeStrings={prompt.target.string === null ? settings.strings : [prompt.target.string]}
-        highlightString={prompt.target.string}
+        activeStrings={onString ? [prompt.target.string] : settings.strings}
+        highlightString={onString ? prompt.target.string : null}
         onTap={onTap}
       />
 
@@ -133,7 +130,7 @@ export function FindMode({ settings }: { settings: FretboardSettings }) {
           type="button"
           className="btn btn-secondary"
           disabled={done}
-          onClick={() => advance(finish(false), prompt.target.id)}
+          onClick={() => advance(finish(false), prompt.target)}
         >
           Skip
         </button>

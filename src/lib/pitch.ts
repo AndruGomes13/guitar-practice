@@ -5,11 +5,27 @@ import { frequencyToMidi, mod12 } from './music';
 export const MIN_FREQUENCY = 70;
 export const MAX_FREQUENCY = 1400;
 
-/** Frames quieter than this (RMS amplitude) are treated as silence. */
-export const MIN_RMS = 0.01;
+export interface DetectionThresholds {
+  /** Frames quieter than this (RMS amplitude) are treated as silence. */
+  minRms: number;
+  /** MPM "clarity" (0–1) below which a pitch estimate is ignored. */
+  minClarity: number;
+}
 
-/** MPM "clarity" (0–1) below which a pitch estimate is ignored. */
-export const MIN_CLARITY = 0.9;
+export type MicSensitivity = 'low' | 'medium' | 'high' | 'max';
+
+/**
+ * How loud (and how clean) a note must be to count. Higher sensitivity picks up
+ * softer plucks but is more easily fooled by background noise.
+ */
+export const MIC_SENSITIVITY: Record<MicSensitivity, DetectionThresholds & { label: string }> = {
+  low: { label: 'Low', minRms: 0.02, minClarity: 0.92 },
+  medium: { label: 'Medium', minRms: 0.01, minClarity: 0.9 },
+  high: { label: 'High', minRms: 0.005, minClarity: 0.88 },
+  max: { label: 'Max', minRms: 0.0025, minClarity: 0.85 },
+};
+
+export const MIC_SENSITIVITY_ORDER: readonly MicSensitivity[] = ['low', 'medium', 'high', 'max'];
 
 export interface Pitch {
   frequency: number;
@@ -35,16 +51,20 @@ export function rootMeanSquare(buffer: ArrayLike<number>): number {
 export class PitchAnalyzer {
   private readonly detector: PitchDetector<Float32Array>;
 
-  constructor(readonly bufferSize: number) {
+  constructor(
+    readonly bufferSize: number,
+    public thresholds: DetectionThresholds = MIC_SENSITIVITY.medium,
+  ) {
     this.detector = PitchDetector.forFloat32Array(bufferSize);
   }
 
   analyze(buffer: Float32Array, sampleRate: number): AudioFrame {
+    const { minRms, minClarity } = this.thresholds;
     const rms = rootMeanSquare(buffer);
-    if (rms < MIN_RMS) return { rms, pitch: null };
+    if (rms < minRms) return { rms, pitch: null };
 
     const [frequency, clarity] = this.detector.findPitch(buffer, sampleRate);
-    if (clarity < MIN_CLARITY || frequency < MIN_FREQUENCY || frequency > MAX_FREQUENCY) {
+    if (clarity < minClarity || frequency < MIN_FREQUENCY || frequency > MAX_FREQUENCY) {
       return { rms, pitch: null };
     }
     const exact = frequencyToMidi(frequency);

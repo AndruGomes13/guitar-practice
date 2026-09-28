@@ -4,24 +4,21 @@ import { MicPitchDetector } from './MicPitchDetector';
 
 export type MicStatus = 'idle' | 'starting' | 'listening' | 'error';
 
+export type MicControls = ReturnType<typeof useMicPitch>;
+
 /**
- * Microphone pitch detection as a hook. `onFrame` is called ~30 times a second
- * while listening and always sees the latest props/state.
+ * Owns the microphone. Keep this high enough in the tree that the mic survives
+ * the exercise below it restarting; read frames with `useMicFrames`.
  */
-export function useMicPitch(onFrame: (frame: AudioFrame) => void) {
+export function useMicPitch() {
   const [detector, setDetector] = useState<MicPitchDetector | null>(null);
   const [status, setStatus] = useState<MicStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const pendingRef = useRef<MicPitchDetector | null>(null);
-  const handleFrame = useEffectEvent(onFrame);
 
   useEffect(() => {
     if (!detector) return;
-    const unsubscribe = detector.subscribe((frame) => handleFrame(frame));
-    return () => {
-      unsubscribe();
-      detector.stop();
-    };
+    return () => detector.stop();
   }, [detector]);
 
   // If we unmount while the permission prompt is still open, stop that detector too.
@@ -55,7 +52,19 @@ export function useMicPitch(onFrame: (frame: AudioFrame) => void) {
     setStatus('idle');
   }, []);
 
-  return { status, error, start, stop };
+  return { detector, status, error, start, stop };
+}
+
+/** Calls `onFrame` ~30 times a second while the mic is listening; it always sees the latest props/state. */
+export function useMicFrames(
+  detector: MicPitchDetector | null,
+  onFrame: (frame: AudioFrame) => void,
+) {
+  const handleFrame = useEffectEvent(onFrame);
+  useEffect(() => {
+    if (!detector) return;
+    return detector.subscribe((frame) => handleFrame(frame));
+  }, [detector]);
 }
 
 function describeError(e: unknown): string {

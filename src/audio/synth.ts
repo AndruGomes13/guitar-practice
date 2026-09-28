@@ -1,6 +1,9 @@
+import type { Direction } from '../lib/intervals';
 import { midiToFrequency } from '../lib/music';
+import { synthesizePluck } from '../lib/pluck';
 
 let ctx: AudioContext | null = null;
+let current: GainNode | null = null;
 
 function audioContext(): AudioContext {
   ctx ??= new AudioContext();
@@ -8,42 +11,28 @@ function audioContext(): AudioContext {
   return ctx;
 }
 
-/** Synthesizes a plucked string with the Karplus–Strong algorithm. */
-function pluckBuffer(ac: AudioContext, frequency: number, seconds = 2.5): AudioBuffer {
-  const sampleRate = ac.sampleRate;
-  const length = Math.floor(sampleRate * seconds);
-  const buffer = ac.createBuffer(1, length, sampleRate);
-  const out = buffer.getChannelData(0);
-  // The two-point average below adds half a sample of delay.
-  const period = Math.max(2, Math.round(sampleRate / frequency - 0.5));
-  const ring = new Float32Array(period);
-  let prev = 0;
-  for (let i = 0; i < period; i++) {
-    // Slightly low-passed noise burst sounds less harsh than raw white noise.
-    prev = 0.5 * prev + 0.5 * (Math.random() * 2 - 1);
-    ring[i] = prev;
-  }
-  let idx = 0;
-  for (let i = 0; i < length; i++) {
-    const next = idx + 1 === period ? 0 : idx + 1;
-    const value = ring[idx];
-    out[i] = value;
-    ring[idx] = 0.996 * 0.5 * (value + ring[next]);
-    idx = next;
-  }
-  return buffer;
-}
-
 /** Plays MIDI notes; `delays` are start offsets in seconds (defaults to all at once). */
 export function playNotes(midis: readonly number[], delays: readonly number[] = []): void {
   const ac = audioContext();
   const start = ac.currentTime + 0.03;
+
+  // Fade out whatever is still ringing so replays don't pile up.
+  if (current) {
+    const previous = current;
+    previous.gain.setTargetAtTime(0, ac.currentTime, 0.03);
+    window.setTimeout(() => previous.disconnect(), 300);
+  }
   const master = ac.createGain();
   master.gain.value = 0.35;
   master.connect(ac.destination);
+  current = master;
+
   midis.forEach((midi, i) => {
+    const samples = synthesizePluck(midiToFrequency(midi), ac.sampleRate, 2.5);
+    const buffer = ac.createBuffer(1, samples.length, ac.sampleRate);
+    buffer.getChannelData(0).set(samples);
     const source = ac.createBufferSource();
-    source.buffer = pluckBuffer(ac, midiToFrequency(midi));
+    source.buffer = buffer;
     source.connect(master);
     source.start(start + (delays[i] ?? 0));
   });
@@ -55,4 +44,9 @@ export function playArpeggioThenChord(midis: readonly number[]): void {
   const arpeggio = midis.map((_, i) => i * 0.4);
   const strum = midis.map((_, i) => n * 0.4 + 0.3 + i * 0.03);
   playNotes([...midis, ...midis], [...arpeggio, ...strum]);
+}
+
+/** Plays two notes one after the other, or together. */
+export function playInterval(first: number, second: number, direction: Direction): void {
+  playNotes([first, second], direction === 'together' ? [0, 0] : [0, 0.75]);
 }

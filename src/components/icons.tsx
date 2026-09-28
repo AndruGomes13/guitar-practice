@@ -78,3 +78,23 @@ export function ChevronRightIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function IntervalIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="6" cy="17" r="2.6" fill="currentColor" />
+      <circle cx="18" cy="7" r="2.6" fill="currentColor" />
+      <path d="M8.5 15.5c2-4.5 4.5-7 7-7.8" opacity={0.6} />
+      <path d="M13.5 6.6l2 1.1-1 2.1" opacity={0.6} />
+    </svg>
+  );
+}
+
+export function ReplayIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 12a8 8 0 1 0 2.4-5.7" />
+      <path d="M4 4.5v4h4" />
+    </svg>
+  );
+}

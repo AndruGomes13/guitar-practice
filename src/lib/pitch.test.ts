@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { midiToFrequency } from './music';
-import { PitchAnalyzer, StableNoteTracker, type Pitch } from './pitch';
+import { MIC_SENSITIVITY, PitchAnalyzer, StableNoteTracker, type Pitch } from './pitch';
 
 const SAMPLE_RATE = 48000;
 const SIZE = 4096;
@@ -36,6 +36,16 @@ describe('PitchAnalyzer', () => {
     expect(frame.pitch?.midi).toBe(57);
     expect(frame.pitch!.cents).toBeGreaterThan(10);
     expect(frame.pitch!.cents).toBeLessThan(30);
+  });
+
+  it('hears soft notes only at higher sensitivity', () => {
+    const soft = pluck(midiToFrequency(45), 0.012); // RMS ≈ 0.006
+    expect(
+      new PitchAnalyzer(SIZE, MIC_SENSITIVITY.medium).analyze(soft, SAMPLE_RATE).pitch,
+    ).toBeNull();
+    expect(
+      new PitchAnalyzer(SIZE, MIC_SENSITIVITY.high).analyze(soft, SAMPLE_RATE).pitch?.midi,
+    ).toBe(45);
   });
 
   it('ignores silence', () => {
