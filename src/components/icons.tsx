@@ -90,6 +90,15 @@ export function IntervalIcon(props: IconProps) {
   );
 }
 
+export function KeySignatureIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 7h18M3 12h18M3 17h18" opacity={0.45} />
+      <path d="M10 4.5v14M14 3.5v14M8 10.5l8-2.2M8 15l8-2.2" />
+    </svg>
+  );
+}
+
 export function ReplayIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

@@ -1,5 +1,6 @@
-import { noteName, TRIAD_QUALITIES, type Triad } from '../../lib/music';
-import { TONE_CLASSES } from './settings';
+import { noteName, TRIAD_QUALITIES, type Triad } from '../lib/music';
+
+const TONE_CLASSES = ['root', 'third', 'fifth'] as const;
 
 /** The three chord tones, colored by their role (root, third, fifth). */
 export function ToneList({ triad, size = 'large' }: { triad: Triad; size?: 'large' | 'small' }) {

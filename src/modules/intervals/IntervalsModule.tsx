@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Chip, Field, Segmented, Sheet } from '../../components/controls';
 import { FretRange, StringChips } from '../../components/guitarControls';
 import { ModuleNav } from '../../components/ModuleNav';
+import { SummaryBar } from '../../components/SummaryBar';
 import { resolveTab, type TabDef } from '../../components/tabs';
 import { DIRECTION_LABELS, INTERVALS, intervalInfo, type Direction } from '../../lib/intervals';
 import { usePersistentState } from '../../lib/usePersistentState';
@@ -47,19 +48,11 @@ export default function IntervalsModule({ tab }: ModuleProps) {
       <ModuleNav moduleId="intervals" tabs={TABS} active={active} onOpenSettings={openSettings} />
       <p className="muted intro">{INTROS[active]}</p>
 
-      <button type="button" className="summary-bar" onClick={openSettings}>
-        <span className="summary-tags">
-          {settings.intervals.map((s) => (
-            <span key={s} className="tag">
-              {intervalInfo(s).short}
-            </span>
-          ))}
-        </span>
-        <span className="summary-meta">
-          {directions.map((d) => DIRECTION_LABELS[d]).join(' · ')}
-          <span className="summary-edit">Change</span>
-        </span>
-      </button>
+      <SummaryBar
+        tags={settings.intervals.map((s) => intervalInfo(s).short)}
+        meta={directions.map((d) => DIRECTION_LABELS[d]).join(' · ')}
+        onClick={openSettings}
+      />
 
       {!hasQuestions ? (
         <div className="card empty-state">

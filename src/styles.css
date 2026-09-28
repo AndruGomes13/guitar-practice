@@ -637,6 +637,18 @@ h3 {
   white-space: nowrap;
 }
 
+@media (max-width: 420px) {
+  /* Size tabs to their labels so a long one ("Progressions") isn't cut off. */
+  .tab {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 9px 4px;
+    overflow: hidden;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+  }
+}
+
 .tab.active {
   background: var(--surface);
   color: var(--text);
@@ -763,14 +775,14 @@ h3 {
   font-weight: 600;
 }
 
-/* Interval answers */
-.interval-picker {
+/* Answer choices (intervals, numerals…) */
+.choice-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 8px;
 }
 
-.interval-btn {
+.choice-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -787,43 +799,43 @@ h3 {
     transform 0.08s;
 }
 
-.interval-btn:active:not(:disabled) {
+.choice-btn:active:not(:disabled) {
   transform: scale(0.96);
 }
 
-.interval-btn:disabled {
+.choice-btn:disabled {
   cursor: default;
 }
 
-.interval-btn:disabled:not(.interval-correct, .interval-wrong) {
+.choice-btn:disabled:not(.choice-correct, .choice-wrong) {
   opacity: 0.5;
 }
 
-.interval-short {
+.choice-main {
   font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.1;
 }
 
-.interval-name {
+.choice-sub {
   color: var(--muted);
   font-size: 0.75rem;
 }
 
-.interval-correct {
+.choice-correct {
   border-color: var(--good);
   background: var(--good);
   color: #fff;
 }
 
-.interval-wrong {
+.choice-wrong {
   border-color: var(--bad);
   background: var(--bad);
   color: #fff;
 }
 
-.interval-correct .interval-name,
-.interval-wrong .interval-name {
+.choice-correct .choice-sub,
+.choice-wrong .choice-sub {
   color: rgb(255 255 255 / 0.85);
 }
 
@@ -851,6 +863,142 @@ h3 {
 
 .play-button:active {
   transform: scale(0.95);
+}
+
+/* Keys */
+.quality-major {
+  --c: var(--root);
+}
+
+.quality-minor {
+  --c: var(--third);
+}
+
+.quality-diminished,
+.quality-augmented {
+  --c: var(--fifth);
+}
+
+.key-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.key-picker p {
+  margin: 0;
+}
+
+.key-group-label {
+  margin: 4px 0 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.key-group-label + .chip-row {
+  margin-bottom: 6px;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart p {
+  margin: 0;
+}
+
+.degree-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 8px;
+}
+
+.degree-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+
+.degree-card:active {
+  transform: scale(0.96);
+}
+
+.degree-numeral {
+  color: var(--c);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.degree-chord {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.degree-notes {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.prog-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.prog-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.prog-slot.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.prog-slot.filled {
+  border-color: color-mix(in srgb, var(--good) 50%, transparent);
+  background: color-mix(in srgb, var(--good) 14%, var(--surface));
+}
+
+.prog-numeral {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.prog-chord {
+  font-size: 1.4rem;
+  font-weight: 800;
 }
 
 .mic-start {

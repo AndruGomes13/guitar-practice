@@ -179,6 +179,12 @@ export function triadPitchClasses(triad: Triad): number[] {
   return triad.tones.map(pitchClassOf);
 }
 
+/** A close, root-position voicing for playback, with the root between C3 and B3. */
+export function triadMidis(triad: Triad): number[] {
+  const root = 48 + pitchClassOf(triad.root);
+  return TRIAD_QUALITIES[triad.quality].semitones.map((s) => root + s);
+}
+
 /**
  * All triads for the given qualities. Chords that would need double sharps or
  * double flats (e.g. D♯ major = D♯–F𝄪–A♯) are left out to keep practice sane.

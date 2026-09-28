@@ -13,7 +13,8 @@ import {
 } from '../../lib/intervals';
 import { groupStats, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
-import { IntervalPicker, type AnswerState } from './IntervalPicker';
+import { answerStates } from '../../components/choices';
+import { IntervalPicker } from './IntervalPicker';
 import {
   itemId,
   pickEarQuestion,
@@ -99,11 +100,7 @@ export function EarIntervals({ settings }: { settings: IntervalSettings }) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const states: Partial<Record<number, AnswerState>> = {};
-  if (answered) {
-    states[question.semitones] = 'correct';
-    if (!correct) states[picked] = 'wrong';
-  }
+  const states = answerStates(question.semitones, picked);
 
   return (
     <div className="stack">

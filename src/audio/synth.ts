@@ -46,6 +46,19 @@ export function playArpeggioThenChord(midis: readonly number[]): void {
   playNotes([...midis, ...midis], [...arpeggio, ...strum]);
 }
 
+/** Strums each chord in turn, `gap` seconds apart. */
+export function playChords(chords: readonly (readonly number[])[], gap = 0.9): void {
+  const notes: number[] = [];
+  const delays: number[] = [];
+  chords.forEach((chord, i) =>
+    chord.forEach((midi, j) => {
+      notes.push(midi);
+      delays.push(i * gap + j * 0.03);
+    }),
+  );
+  playNotes(notes, delays);
+}
+
 /** Plays two notes one after the other, or together. */
 export function playInterval(first: number, second: number, direction: Direction): void {
   playNotes([first, second], direction === 'together' ? [0, 0] : [0, 0.75]);

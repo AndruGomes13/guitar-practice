@@ -3,7 +3,7 @@ import { triadName, triadSymbol, type Triad } from '../../lib/music';
 import { pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import type { TriadSettings } from './settings';
-import { ToneList } from './ToneList';
+import { ToneList } from '../../components/ToneList';
 
 const idOf = (t: Triad) => t.id;
 

@@ -17,7 +17,7 @@ import {
 } from '../../lib/music';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { TONE_CLASSES } from './settings';
-import { ToneList } from './ToneList';
+import { ToneList } from '../../components/ToneList';
 
 const NATURAL_ROOTS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const ACCIDENTAL_ROOTS = ['C#', 'Db', 'D#', 'Eb', 'F#', 'Gb', 'G#', 'Ab', 'A#', 'Bb'];

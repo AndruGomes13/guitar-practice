@@ -39,6 +39,18 @@ range, naturals only, and sharps/flats.
 Choose which intervals to practice in the settings. Start with a few (the "Beginner set" is
 m3, M3, P4, P5, P8) and add more as they get easy.
 
+**Keys**
+
+- **Chart**: pick a key to see its seven chords (I ii iii IV V vi vii°) with their notes, and
+  tap one to hear it. Switching between major and minor jumps to the relative key.
+- **Quiz**: "In G major, what's the IV?" (tap the root: C) and "In G major, what's Em?" (pick
+  the numeral: vi), mixed.
+- **Progressions**: fill in common progressions (I–V–vi–IV, ii–V–I, i–VI–III–VII…) in a key,
+  then hear them.
+
+Choose keys and chords (degrees) in the settings. Start with a few keys and I, IV, V. Minor
+keys can use a major V (E in A minor), as most songs in minor keys do.
+
 Every exercise keeps per-item stats in your browser. Items you miss or answer slowly come up
 more often.
 
@@ -89,6 +101,7 @@ src/
   lib/                 Framework-free logic, unit tested
     music.ts           Notes, spelling, triads
     intervals.ts       Interval names and spelling (C–E♭, not C–D♯)
+    keys.ts            Scales, diatonic chords and Roman numerals for every key
     guitar.ts          Tuning and fretboard positions
     pitch.ts           Pitch analysis (McLeod method via `pitchy`) and note-onset tracking
     stats.ts           Per-item stats and weighted "practice what you're weak at" picking
@@ -103,6 +116,7 @@ src/
     triads/            Triads tool
     fretboard/         Fretboard notes tool
     intervals/         Intervals tool
+    keys/              Keys tool
 ```
 
 ### Adding a new practice tool
