@@ -765,6 +765,19 @@ h3 {
   margin: 0;
 }
 
+/* After a miss, keep the explanation and the Next button pinned to the bottom of the screen. */
+.feedback-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 0 -16px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 .feedback-good {
   color: var(--good);
   font-weight: 700;

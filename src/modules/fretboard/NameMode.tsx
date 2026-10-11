@@ -95,7 +95,10 @@ export function NameMode({ settings }: { settings: FretboardSettings }) {
         highlightString={position.string}
       />
 
-      <div className="feedback" aria-live="polite">
+      <div
+        className={`feedback${answered && !correct ? ' feedback-sticky' : ''}`}
+        aria-live="polite"
+      >
         {!answered ? (
           <p className="muted">
             Which note is at fret {position.fret} on the {describeString(position.string)}?

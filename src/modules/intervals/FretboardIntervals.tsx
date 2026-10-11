@@ -118,7 +118,10 @@ export function FretboardIntervals({ settings }: { settings: IntervalSettings })
         disabled={answered}
       />
 
-      <div className="feedback" aria-live="polite">
+      <div
+        className={`feedback${answered && !correct ? ' feedback-sticky' : ''}`}
+        aria-live="polite"
+      >
         {!answered ? null : correct ? (
           <p className="feedback-good">
             ✓ {info.name} {asDegree ? '(below the root)' : direction} · {names.root} →{' '}

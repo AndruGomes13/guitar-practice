@@ -76,7 +76,7 @@ export function Build({ pool }: { pool: readonly Triad[] }) {
 
       <NotePicker states={keyStates} onPick={onPick} />
 
-      <div className="feedback" aria-live="polite">
+      <div className={`feedback${result === 'wrong' ? ' feedback-sticky' : ''}`} aria-live="polite">
         {result === null ? (
           <p className="muted">
             {picked.length === 0

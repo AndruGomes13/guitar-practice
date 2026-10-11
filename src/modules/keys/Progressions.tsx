@@ -101,7 +101,7 @@ export function Progressions({ settings }: { settings: KeySettings }) {
 
       <NotePicker states={keyStates} onPick={onPick} disabled={done} />
 
-      <div className="feedback" aria-live="polite">
+      <div className={`feedback${done ? ' feedback-sticky' : ''}`} aria-live="polite">
         {current ? (
           <>
             <p className={wrong === null ? 'muted' : 'feedback-bad'}>

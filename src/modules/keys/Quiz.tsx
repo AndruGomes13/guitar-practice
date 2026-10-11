@@ -109,7 +109,10 @@ export function Quiz({ settings }: { settings: KeySettings }) {
         />
       )}
 
-      <div className="feedback" aria-live="polite">
+      <div
+        className={`feedback${answered && !correct ? ' feedback-sticky' : ''}`}
+        aria-live="polite"
+      >
         {!answered ? null : correct ? (
           <p className="feedback-good">
             ✓ {chord.numeral} in {keyName(key)} is {symbol} ({notes})

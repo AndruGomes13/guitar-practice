@@ -138,7 +138,10 @@ export function EarIntervals({ settings }: { settings: IntervalSettings }) {
         disabled={heardAt === null || answered}
       />
 
-      <div className="feedback" aria-live="polite">
+      <div
+        className={`feedback${answered && !correct ? ' feedback-sticky' : ''}`}
+        aria-live="polite"
+      >
         {!answered ? null : correct ? (
           <p className="feedback-good">
             ✓ {info.name} {question.direction} · {names.root} → {names.second}
