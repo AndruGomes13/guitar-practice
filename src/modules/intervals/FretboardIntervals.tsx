@@ -38,7 +38,9 @@ export function FretboardIntervals({ settings }: { settings: IntervalSettings })
   const timeout = useTimeout();
 
   const rootMidi = midiAt(question.root);
-  const names = spellInterval(rootMidi, question.semitones, question.direction);
+  // Named as a degree, the note below the root is spelled like the same degree above it.
+  const asDegree = question.direction === 'down' && settings.belowRoot === 'degree';
+  const names = spellInterval(rootMidi, question.semitones, asDegree ? 'up' : question.direction);
   const info = intervalInfo(question.semitones);
   const answered = picked !== null;
   const correct = picked === question.semitones;
@@ -91,8 +93,14 @@ export function FretboardIntervals({ settings }: { settings: IntervalSettings })
         className={`card prompt-card prompt-compact${answered ? (correct ? ' prompt-correct' : ' prompt-wrong') : ''}`}
       >
         <div className="prompt-kicker">Name the interval</div>
-        <div className="prompt-main">{direction === 'up' ? '↑ Up' : '↓ Down'}</div>
-        <div className="prompt-sub">from the root (R) to the other note</div>
+        <div className="prompt-main">
+          {direction === 'up' ? '↑ Up' : asDegree ? '↓ Below' : '↓ Down'}
+        </div>
+        <div className="prompt-sub">
+          {asDegree
+            ? 'the other note is below the root (R): name its degree'
+            : 'from the root (R) to the other note'}
+        </div>
       </section>
 
       <Fretboard
@@ -113,13 +121,14 @@ export function FretboardIntervals({ settings }: { settings: IntervalSettings })
       <div className="feedback" aria-live="polite">
         {!answered ? null : correct ? (
           <p className="feedback-good">
-            ✓ {info.name} {direction} · {names.root} → {names.second}
+            ✓ {info.name} {asDegree ? '(below the root)' : direction} · {names.root} →{' '}
+            {names.second}
           </p>
         ) : (
           <>
             <p className="feedback-bad">
-              That’s {intervalPhrase(question.semitones)} {direction} ({names.root} → {names.second}
-              ), not {intervalPhrase(picked)}.
+              That’s {intervalPhrase(question.semitones)} {asDegree ? 'below the root' : direction}{' '}
+              ({names.root} → {names.second}), not {intervalPhrase(picked)}.
             </p>
             <div className="button-row">
               <button type="button" className="btn btn-secondary" onClick={hear}>

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { midiAt } from '../../lib/guitar';
 import { recordResult, type StatsMap } from '../../lib/stats';
 import {
+  boardDelta,
   boardItems,
   boardPairs,
   boardWindow,
@@ -26,7 +27,8 @@ describe('fretboard interval questions', () => {
     for (let i = 0; i < 200; i++) {
       const q = pickBoardQuestion(s, {});
       const delta = midiAt(q.second) - midiAt(q.root);
-      expect(delta).toBe(q.direction === 'up' ? q.semitones : -q.semitones);
+      expect(delta).toBe(boardDelta(q, s));
+      expect(Math.sign(delta)).toBe(q.direction === 'up' ? 1 : -1);
       expect(Math.abs(q.second.fret - q.root.fret)).toBeLessThanOrEqual(HAND_SPAN);
       expect(q.root.fret).toBeGreaterThanOrEqual(0);
       expect(q.second.fret).toBeLessThanOrEqual(12);
@@ -99,5 +101,28 @@ describe('ear interval questions', () => {
       );
       previous = next;
     }
+  });
+});
+
+describe('notes below the root', () => {
+  const s = (belowRoot: 'degree' | 'interval') =>
+    settings({ intervals: [11], boardDirections: ['down'], belowRoot });
+
+  it('names them by degree: a major 7th sits one fret below the root', () => {
+    for (let i = 0; i < 50; i++) {
+      const q = pickBoardQuestion(s('degree'), {});
+      expect(q.semitones).toBe(11);
+      expect(midiAt(q.second) - midiAt(q.root)).toBe(-1);
+    }
+  });
+
+  it('or as a descending distance: a major 7th down', () => {
+    const q = pickBoardQuestion(s('interval'), {});
+    expect(midiAt(q.second) - midiAt(q.root)).toBe(-11);
+  });
+
+  it('keeps the octave an octave', () => {
+    const q = pickBoardQuestion(settings({ intervals: [12], boardDirections: ['down'] }), {});
+    expect(midiAt(q.second) - midiAt(q.root)).toBe(-12);
   });
 });

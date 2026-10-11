@@ -44,7 +44,7 @@ export function Fretboard({
   const vertical = orientation === 'vertical' || (orientation === 'auto' && portraitPhone);
 
   const cellLength = vertical ? 44 : 56;
-  const stringGap = vertical ? 50 : 32;
+  const stringGap = vertical ? 50 : 26;
   const woodPad = stringGap * 0.5;
   const headGutter = 26; // string names
   const numberGutter = 24; // fret numbers

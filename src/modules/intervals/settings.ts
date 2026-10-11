@@ -16,6 +16,12 @@ export interface IntervalSettings {
   span: 'hand' | 'neck';
   /** Label the fretboard notes by name instead of "R" and "?". */
   showNoteNames: boolean;
+  /**
+   * How to name a note that sits below the root. "degree": by its degree above
+   * the root, as in a chord shape (B below C is the major 7th). "interval": by the
+   * descending distance (B below C is a minor 2nd down).
+   */
+  belowRoot: 'degree' | 'interval';
 }
 
 /** A good first set: the thirds, fourth, fifth and octave. */
@@ -30,6 +36,7 @@ export const DEFAULT_INTERVAL_SETTINGS: IntervalSettings = {
   maxFret: 12,
   span: 'hand',
   showNoteNames: false,
+  belowRoot: 'degree',
 };
 
 export const ALL_INTERVALS = INTERVALS.map((i) => i.semitones);
@@ -64,13 +71,23 @@ export interface BoardQuestion extends IntervalItem {
   second: FretPosition;
 }
 
+/**
+ * Semitones from the root to the second note. Below the root in "degree" mode,
+ * the note is the inversion: a major 7th degree sits a minor 2nd below.
+ */
+export function boardDelta(item: IntervalItem, s: IntervalSettings): number {
+  if (item.direction !== 'down') return item.semitones;
+  if (s.belowRoot === 'interval' || item.semitones === 12) return -item.semitones;
+  return -(12 - item.semitones);
+}
+
 /** Every (root, second note) pair on the neck that forms this interval under the settings. */
 export function boardPairs(
   item: IntervalItem,
   s: IntervalSettings,
 ): [FretPosition, FretPosition][] {
   const positions = allPositions(s.strings, s.minFret, s.maxFret);
-  const delta = item.direction === 'down' ? -item.semitones : item.semitones;
+  const delta = boardDelta(item, s);
   const pairs: [FretPosition, FretPosition][] = [];
   for (const root of positions) {
     for (const second of positions) {
@@ -118,7 +135,15 @@ export function boardWindow(q: BoardQuestion, s: IntervalSettings): [number, num
 
 /** Settings that change which fretboard questions are possible. */
 export function boardKey(s: IntervalSettings): string {
-  return JSON.stringify([s.intervals, s.boardDirections, s.strings, s.minFret, s.maxFret, s.span]);
+  return JSON.stringify([
+    s.intervals,
+    s.boardDirections,
+    s.strings,
+    s.minFret,
+    s.maxFret,
+    s.span,
+    s.belowRoot,
+  ]);
 }
 
 // ---------------------------------------------------------------------------

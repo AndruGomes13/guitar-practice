@@ -154,6 +154,20 @@ function IntervalSettingsForm({ settings, onChange, mode }: FormProps) {
               })}
             </div>
           </Field>
+          <Field
+            label="Notes below the root"
+            hint="By degree, a B below C is the major 7th (like naming notes in a chord shape). As a distance, it's a minor 2nd down."
+          >
+            <Segmented
+              label="Notes below the root"
+              value={settings.belowRoot}
+              onChange={(belowRoot) => set({ belowRoot })}
+              options={[
+                { value: 'degree', label: 'By degree (M7)' },
+                { value: 'interval', label: 'As a distance (m2 ↓)' },
+              ]}
+            />
+          </Field>
           <Field label="Shape size">
             <Segmented
               label="Shape size"

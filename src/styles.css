@@ -1326,6 +1326,14 @@ div.key {
   max-height: 68dvh;
 }
 
+/* Landscape phones: keep the neck short so the answer buttons stay on screen. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .fretboard svg {
+    max-height: 38vh;
+    max-height: 38dvh;
+  }
+}
+
 .fb-wood {
   fill: var(--wood);
 }
