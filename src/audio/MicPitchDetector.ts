@@ -1,3 +1,4 @@
+import { setRecordingSession } from './audioSession';
 import {
   MIC_SENSITIVITY,
   PitchAnalyzer,
@@ -39,6 +40,7 @@ export class MicPitchDetector {
     }
 
     // Create the context synchronously, while we're still inside the click handler.
+    setRecordingSession(true);
     const ctx = new AudioContext();
     this.ctx = ctx;
 
@@ -90,6 +92,7 @@ export class MicPitchDetector {
   }
 
   private release(): void {
+    setRecordingSession(false);
     window.clearInterval(this.timer);
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.stream?.getTracks().forEach((t) => t.stop());

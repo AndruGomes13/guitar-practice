@@ -1,13 +1,16 @@
 import type { Direction } from '../lib/intervals';
 import { midiToFrequency } from '../lib/music';
 import { synthesizePluck } from '../lib/pluck';
+import { preferPlaybackSession } from './audioSession';
 
 let ctx: AudioContext | null = null;
 let current: GainNode | null = null;
 
 function audioContext(): AudioContext {
-  ctx ??= new AudioContext();
-  if (ctx.state === 'suspended') void ctx.resume();
+  preferPlaybackSession();
+  if (!ctx || ctx.state === 'closed') ctx = new AudioContext();
+  // iOS can leave the context "suspended" or "interrupted" (e.g. after the screen locks).
+  if (ctx.state !== 'running') void ctx.resume();
   return ctx;
 }
 
