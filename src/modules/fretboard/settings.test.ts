@@ -65,7 +65,8 @@ describe('fretboard questions', () => {
     stats = recordResult(stats, '0', false);
     let cCount = 0;
     for (let i = 0; i < 400; i++) if (pickTarget(s, stats).pc === 0) cCount++;
-    expect(cCount / 400).toBeGreaterThan(0.5);
+    // Uniform would be 1/7 ≈ 14%; a missed note comes up noticeably more often.
+    expect(cCount / 400).toBeGreaterThan(0.25);
   });
 
   it('accepts positions on the given string, or anywhere', () => {

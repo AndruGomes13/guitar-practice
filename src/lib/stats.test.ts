@@ -28,6 +28,30 @@ describe('stats', () => {
     expect(itemWeight(undefined)).toBeGreaterThan(itemWeight(stats.easy));
   });
 
+  it('keeps weights within a gentle range', () => {
+    let mastered: StatsMap = {};
+    for (let i = 0; i < 20; i++) mastered = recordResult(mastered, 'x', true, 300);
+    let missed: StatsMap = {};
+    for (let i = 0; i < 20; i++) missed = recordResult(missed, 'x', false);
+    const low = itemWeight(mastered.x);
+    const high = itemWeight(missed.x);
+    expect(low).toBeGreaterThanOrEqual(0.5);
+    expect(high).toBeLessThanOrEqual(3);
+    // A new item is favored, but not by much over one you know.
+    expect(itemWeight(undefined) / low).toBeLessThan(2.5);
+  });
+
+  it('keeps known items in the mix when new ones are added', () => {
+    // 14 well-practiced items plus 10 brand-new ones (like adding sharp roots).
+    let stats: StatsMap = {};
+    const known = Array.from({ length: 14 }, (_, i) => `k${i}`);
+    const fresh = Array.from({ length: 10 }, (_, i) => `n${i}`);
+    for (const id of known) for (let i = 0; i < 6; i++) stats = recordResult(stats, id, true);
+    const total = [...known, ...fresh].reduce((sum, id) => sum + itemWeight(stats[id]), 0);
+    const knownShare = known.reduce((sum, id) => sum + itemWeight(stats[id]), 0) / total;
+    expect(knownShare).toBeGreaterThan(0.35);
+  });
+
   it('never repeats the avoided item when there is a choice', () => {
     const items = ['a', 'b'];
     for (let i = 0; i < 20; i++) {

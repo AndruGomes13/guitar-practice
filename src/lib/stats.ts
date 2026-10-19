@@ -1,8 +1,8 @@
 /**
  * Lightweight per-item practice statistics and weighted item selection.
  *
- * Items you miss or answer slowly come up more often; items you keep getting
- * right fade into the background (a very simple form of spaced repetition).
+ * Items you miss or answer slowly come up somewhat more often, and items you
+ * keep getting right a bit less, but everything stays in the mix.
  */
 
 export interface ItemStat {
@@ -47,15 +47,19 @@ export function averageMs(stat: ItemStat | undefined): number | null {
   return stat && stat.timedCount > 0 ? stat.totalMs / stat.timedCount : null;
 }
 
-/** Relative chance of an item being picked next. */
+/**
+ * Relative chance of an item being picked next. Deliberately gentle: weights
+ * stay between 0.5 and 3, so new or weak items come up more often without
+ * crowding out everything else (at most ~4× more likely than a mastered item).
+ */
 export function itemWeight(stat: ItemStat | undefined, slowMs = 4000): number {
-  if (!stat || stat.attempts === 0) return 3;
+  if (!stat || stat.attempts === 0) return 1.3;
   const acc = stat.correct / stat.attempts;
-  let weight = 1 + (1 - acc) * 4;
-  weight /= 1 + stat.streak * 0.75;
+  let weight = 1 + (1 - acc) * 1.5;
+  weight /= 1 + Math.min(stat.streak, 4) * 0.1;
   const avg = averageMs(stat);
-  if (avg !== null) weight *= Math.min(2, Math.max(0.5, avg / slowMs));
-  return Math.max(0.1, weight);
+  if (avg !== null) weight *= Math.min(1.25, Math.max(0.8, avg / slowMs));
+  return Math.min(3, Math.max(0.5, weight));
 }
 
 /**
