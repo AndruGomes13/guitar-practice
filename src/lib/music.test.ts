@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildTriad,
+  buildChord,
   frequencyToMidi,
   noteName,
   parseNote,
   pcName,
   transpose,
-  triadName,
-  triadPitchClasses,
-  triadPool,
-  triadSymbol,
-  type TriadQuality,
+  chordName,
+  chordPitchClasses,
+  chordPool,
+  chordSymbol,
+  type ChordQuality,
 } from './music';
 
-const spell = (root: string, quality: TriadQuality) =>
-  buildTriad(parseNote(root), quality).tones.map(noteName).join(' ');
+const spell = (root: string, quality: ChordQuality) =>
+  buildChord(parseNote(root), quality).tones.map(noteName).join(' ');
 
 describe('note spelling', () => {
   it('parses and names notes', () => {
@@ -60,15 +60,36 @@ describe('triads', () => {
     expect(spell('C', 'augmented')).toBe('C E G♯');
   });
 
+  it('spells 7th chords', () => {
+    expect(spell('C', 'maj7')).toBe('C E G B');
+    expect(spell('G', 'dom7')).toBe('G B D F');
+    expect(spell('A', 'min7')).toBe('A C E G');
+    expect(spell('B', 'half-dim7')).toBe('B D F A');
+    expect(spell('B', 'dim7')).toBe('B D F A♭');
+    expect(spell('F#', 'min7')).toBe('F♯ A C♯ E');
+    expect(spell('Eb', 'maj7')).toBe('E♭ G B♭ D');
+    expect(chordSymbol(buildChord(parseNote('D'), 'dom7'))).toBe('D7');
+    expect(chordSymbol(buildChord(parseNote('C#'), 'half-dim7'))).toBe('C♯m7♭5');
+    expect(chordName(buildChord(parseNote('G'), 'dom7'))).toBe('G dominant 7th');
+  });
+
+  it('includes 7th chords in the pool, without double accidentals', () => {
+    const pool = chordPool(['dim7'], { sharps: true, flats: true });
+    // C°7 needs B𝄫, so it's left out; B°7 (B D F A♭) is in.
+    expect(pool.some((c) => c.id === 'C-dim7')).toBe(false);
+    expect(pool.some((c) => c.id === 'B-dim7')).toBe(true);
+    expect(pool.every((c) => c.tones.length === 4)).toBe(true);
+  });
+
   it('names triads', () => {
-    const t = buildTriad(parseNote('Ab'), 'minor');
-    expect(triadSymbol(t)).toBe('A♭m');
-    expect(triadName(t)).toBe('A♭ minor');
-    expect(triadPitchClasses(t)).toEqual([8, 11, 3]);
+    const t = buildChord(parseNote('Ab'), 'minor');
+    expect(chordSymbol(t)).toBe('A♭m');
+    expect(chordName(t)).toBe('A♭ minor');
+    expect(chordPitchClasses(t)).toEqual([8, 11, 3]);
   });
 
   it('builds a pool without double accidentals', () => {
-    const pool = triadPool(['major', 'minor', 'diminished', 'augmented'], {
+    const pool = chordPool(['major', 'minor', 'diminished', 'augmented'], {
       sharps: true,
       flats: true,
     });
@@ -80,15 +101,15 @@ describe('triads', () => {
   });
 
   it('can include sharp roots without flat ones', () => {
-    const roots = triadPool(['major'], { sharps: true, flats: false }).map((t) => noteName(t.root));
+    const roots = chordPool(['major'], { sharps: true, flats: false }).map((t) => noteName(t.root));
     expect(roots).toContain('F♯');
     expect(roots).toContain('C♯');
     expect(roots.some((r) => r.includes('♭'))).toBe(false);
   });
 
   it('can limit the pool to natural roots', () => {
-    const pool = triadPool(['major'], { sharps: false, flats: false });
-    expect(pool.map(triadSymbol)).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+    const pool = chordPool(['major'], { sharps: false, flats: false });
+    expect(pool.map(chordSymbol)).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
   });
 });
 

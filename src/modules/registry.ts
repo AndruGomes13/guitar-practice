@@ -8,11 +8,12 @@ import type { PracticeModule } from './types';
  */
 export const MODULES: readonly PracticeModule[] = [
   {
-    id: 'triads',
-    title: 'Triads',
-    description: 'Learn which three notes make each major, minor, diminished and augmented chord.',
+    id: 'chords',
+    aliases: ['triads'],
+    title: 'Chords',
+    description: 'Learn the notes of each chord: triads and 7th chords.',
     icon: TriadIcon,
-    component: lazy(() => import('./triads/TriadsModule')),
+    component: lazy(() => import('./chords/ChordsModule')),
   },
   {
     id: 'fretboard',

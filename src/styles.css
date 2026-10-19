@@ -16,6 +16,7 @@
   --root: #f5a524;
   --third: #38bdf8;
   --fifth: #a78bfa;
+  --seventh: #f472b6;
   --good: #22c55e;
   --bad: #ef4444;
   --hint: #eab308;
@@ -52,6 +53,7 @@
     --root: #f59e0b;
     --third: #0ea5e9;
     --fifth: #8b5cf6;
+    --seventh: #db2777;
     --good: #16a34a;
     --bad: #dc2626;
     --hint: #ca8a04;
@@ -1043,6 +1045,10 @@ h3 {
   --c: var(--fifth);
 }
 
+.tone-seventh {
+  --c: var(--seventh);
+}
+
 .tones {
   display: flex;
   justify-content: center;
@@ -1080,6 +1086,12 @@ h3 {
 
 .tones-small .tone-name {
   font-size: 1.35rem;
+}
+
+.quality-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .root-picker {
@@ -1307,9 +1319,14 @@ div.key {
   --c: var(--fifth);
 }
 
+.key-seventh {
+  --c: var(--seventh);
+}
+
 .key-root,
 .key-third,
-.key-fifth {
+.key-fifth,
+.key-seventh {
   border-color: var(--c);
   background: var(--c);
   color: #111;
@@ -1446,6 +1463,10 @@ div.key {
 
 .fb-marker-fifth circle {
   fill: var(--fifth);
+}
+
+.fb-marker-seventh circle {
+  fill: var(--seventh);
 }
 
 .fb-marker-neutral circle {

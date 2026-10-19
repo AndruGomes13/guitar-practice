@@ -2,7 +2,7 @@ import { STANDARD_TUNING, STRING_COUNT, type FretPosition } from '../lib/guitar'
 import { useMediaQuery } from '../lib/hooks';
 
 export type MarkerTone =
-  'root' | 'third' | 'fifth' | 'correct' | 'wrong' | 'target' | 'hint' | 'neutral';
+  'root' | 'third' | 'fifth' | 'seventh' | 'correct' | 'wrong' | 'target' | 'hint' | 'neutral';
 
 export interface FretMarker extends FretPosition {
   tone: MarkerTone;

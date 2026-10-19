@@ -1,11 +1,11 @@
 import {
-  buildTriad,
+  buildChord,
   noteName,
   parseNote,
   pitchClassOf,
   transpose,
   type SpelledNote,
-  type Triad,
+  type Chord,
   type TriadQuality,
 } from './music';
 
@@ -80,7 +80,7 @@ export interface DiatonicChord {
   /** 0 = I, 6 = VII. */
   degree: number;
   numeral: string;
-  triad: Triad;
+  chord: Chord;
 }
 
 export interface ChordOptions {
@@ -98,7 +98,7 @@ export function diatonicChords(key: MusicalKey, options: ChordOptions = {}): Dia
   return scaleNotes(key).map((root, degree) => ({
     degree,
     numeral: romanNumeral(degree, qualities[degree]),
-    triad: buildTriad(root, qualities[degree]),
+    chord: buildChord(root, qualities[degree]),
   }));
 }
 

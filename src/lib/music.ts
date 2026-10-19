@@ -78,17 +78,19 @@ export function transpose(note: SpelledNote, letterSteps: number, semitones: num
 // ---------------------------------------------------------------------------
 
 export type TriadQuality = 'major' | 'minor' | 'diminished' | 'augmented';
+export type SeventhQuality = 'maj7' | 'dom7' | 'min7' | 'half-dim7' | 'dim7';
+export type ChordQuality = TriadQuality | SeventhQuality;
 
-export interface TriadQualityInfo {
+export interface ChordQualityInfo {
   label: string;
   symbol: string;
-  /** Semitones above the root for the root, third and fifth. */
-  semitones: [number, number, number];
-  degrees: [string, string, string];
+  /** Semitones above the root for each chord tone (root, 3rd, 5th, 7th). */
+  semitones: number[];
+  degrees: string[];
   formula: string;
 }
 
-export const TRIAD_QUALITIES: Record<TriadQuality, TriadQualityInfo> = {
+export const CHORD_QUALITIES: Record<ChordQuality, ChordQualityInfo> = {
   major: {
     label: 'Major',
     symbol: '',
@@ -117,6 +119,41 @@ export const TRIAD_QUALITIES: Record<TriadQuality, TriadQualityInfo> = {
     degrees: ['1', '3', '♯5'],
     formula: 'Root + major 3rd (4 semitones) + augmented 5th (8 semitones)',
   },
+  maj7: {
+    label: 'Major 7th',
+    symbol: 'maj7',
+    semitones: [0, 4, 7, 11],
+    degrees: ['1', '3', '5', '7'],
+    formula: 'Major triad + major 7th (11 semitones)',
+  },
+  dom7: {
+    label: 'Dominant 7th',
+    symbol: '7',
+    semitones: [0, 4, 7, 10],
+    degrees: ['1', '3', '5', '♭7'],
+    formula: 'Major triad + minor 7th (10 semitones)',
+  },
+  min7: {
+    label: 'Minor 7th',
+    symbol: 'm7',
+    semitones: [0, 3, 7, 10],
+    degrees: ['1', '♭3', '5', '♭7'],
+    formula: 'Minor triad + minor 7th (10 semitones)',
+  },
+  'half-dim7': {
+    label: 'Half-diminished',
+    symbol: 'm7♭5',
+    semitones: [0, 3, 6, 10],
+    degrees: ['1', '♭3', '♭5', '♭7'],
+    formula: 'Diminished triad + minor 7th (10 semitones)',
+  },
+  dim7: {
+    label: 'Diminished 7th',
+    symbol: '°7',
+    semitones: [0, 3, 6, 9],
+    degrees: ['1', '♭3', '♭5', '𝄫7'],
+    formula: 'Diminished triad + diminished 7th (9 semitones)',
+  },
 };
 
 export const TRIAD_QUALITY_ORDER: readonly TriadQuality[] = [
@@ -124,6 +161,19 @@ export const TRIAD_QUALITY_ORDER: readonly TriadQuality[] = [
   'minor',
   'diminished',
   'augmented',
+];
+
+export const SEVENTH_QUALITY_ORDER: readonly SeventhQuality[] = [
+  'maj7',
+  'dom7',
+  'min7',
+  'half-dim7',
+  'dim7',
+];
+
+export const CHORD_QUALITY_ORDER: readonly ChordQuality[] = [
+  ...TRIAD_QUALITY_ORDER,
+  ...SEVENTH_QUALITY_ORDER,
 ];
 
 /** Root names offered in the UI, in chromatic order. */
@@ -147,46 +197,48 @@ export const ROOT_NAMES = [
   'B',
 ] as const;
 
-export interface Triad {
+export interface Chord {
   id: string;
   root: SpelledNote;
-  quality: TriadQuality;
-  /** Root, third, fifth — correctly spelled. */
-  tones: [SpelledNote, SpelledNote, SpelledNote];
+  quality: ChordQuality;
+  /** Root, third, fifth (and seventh) — correctly spelled. */
+  tones: SpelledNote[];
 }
 
-export function buildTriad(root: SpelledNote, quality: TriadQuality): Triad {
-  const [, third, fifth] = TRIAD_QUALITIES[quality].semitones;
+/** Chord tones are stacked thirds: root, 3rd, 5th, 7th are 0, 2, 4, 6 letter names up. */
+export function buildChord(root: SpelledNote, quality: ChordQuality): Chord {
   return {
     id: `${noteName(root)}-${quality}`,
     root,
     quality,
-    tones: [root, transpose(root, 2, third), transpose(root, 4, fifth)],
+    tones: CHORD_QUALITIES[quality].semitones.map((semitones, i) =>
+      transpose(root, i * 2, semitones),
+    ),
   };
 }
 
-/** Short symbol like "A♭m" or "B°". */
-export function triadSymbol(triad: Triad): string {
-  return noteName(triad.root) + TRIAD_QUALITIES[triad.quality].symbol;
+/** Short symbol like "A♭m", "B°" or "G7". */
+export function chordSymbol(chord: Chord): string {
+  return noteName(chord.root) + CHORD_QUALITIES[chord.quality].symbol;
 }
 
-/** Long name like "A♭ minor". */
-export function triadName(triad: Triad): string {
-  return `${noteName(triad.root)} ${TRIAD_QUALITIES[triad.quality].label.toLowerCase()}`;
+/** Long name like "A♭ minor" or "G dominant 7th". */
+export function chordName(chord: Chord): string {
+  return `${noteName(chord.root)} ${CHORD_QUALITIES[chord.quality].label.toLowerCase()}`;
 }
 
-export function triadPitchClasses(triad: Triad): number[] {
-  return triad.tones.map(pitchClassOf);
+export function chordPitchClasses(chord: Chord): number[] {
+  return chord.tones.map(pitchClassOf);
 }
 
 /** A close, root-position voicing for playback, with the root between C3 and B3. */
-export function triadMidis(triad: Triad): number[] {
-  const root = 48 + pitchClassOf(triad.root);
-  return TRIAD_QUALITIES[triad.quality].semitones.map((s) => root + s);
+export function chordMidis(chord: Chord): number[] {
+  const root = 48 + pitchClassOf(chord.root);
+  return CHORD_QUALITIES[chord.quality].semitones.map((s) => root + s);
 }
 
 /**
- * All triads for the given qualities. Chords that would need double sharps or
+ * All chords of the given qualities. Chords that would need double sharps or
  * double flats (e.g. D♯ major = D♯–F𝄪–A♯) are left out to keep practice sane.
  */
 export interface RootOptions {
@@ -196,15 +248,15 @@ export interface RootOptions {
   flats: boolean;
 }
 
-export function triadPool(qualities: readonly TriadQuality[], roots: RootOptions): Triad[] {
-  const pool: Triad[] = [];
+export function chordPool(qualities: readonly ChordQuality[], roots: RootOptions): Chord[] {
+  const pool: Chord[] = [];
   for (const quality of qualities) {
     for (const rootName of ROOT_NAMES) {
       const root = parseNote(rootName);
       if (root.accidental > 0 && !roots.sharps) continue;
       if (root.accidental < 0 && !roots.flats) continue;
-      const triad = buildTriad(root, quality);
-      if (triad.tones.every((t) => Math.abs(t.accidental) <= 1)) pool.push(triad);
+      const chord = buildChord(root, quality);
+      if (chord.tones.every((t) => Math.abs(t.accidental) <= 1)) pool.push(chord);
     }
   }
   return pool;

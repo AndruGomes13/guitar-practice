@@ -1,15 +1,15 @@
 import { useEffect, useEffectEvent, useState } from 'react';
-import { triadName, triadSymbol, type Triad } from '../../lib/music';
+import { chordName, chordSymbol, type Chord } from '../../lib/music';
 import { pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
-import type { TriadSettings } from './settings';
+import type { ChordSettings } from './settings';
 import { ToneList } from '../../components/ToneList';
 
-const idOf = (t: Triad) => t.id;
+const idOf = (t: Chord) => t.id;
 
 interface Props {
-  pool: readonly Triad[];
-  front: TriadSettings['cardFront'];
+  pool: readonly Chord[];
+  front: ChordSettings['cardFront'];
 }
 
 /** Classic flashcards: think of the answer, flip, and be honest with yourself. */
@@ -47,11 +47,11 @@ export function Flashcards({ pool, front }: Props) {
 
   const nameFace = (
     <>
-      <div className="flashcard-main">{triadSymbol(card)}</div>
-      <div className="flashcard-sub">{triadName(card)}</div>
+      <div className="flashcard-main">{chordSymbol(card)}</div>
+      <div className="flashcard-sub">{chordName(card)}</div>
     </>
   );
-  const notesFace = <ToneList triad={card} />;
+  const notesFace = <ToneList chord={card} />;
 
   return (
     <div className="stack">
@@ -80,13 +80,13 @@ export function Flashcards({ pool, front }: Props) {
           <div className="flashcard-face flashcard-back">
             {front === 'name' ? (
               <>
-                <div className="flashcard-sub">{triadName(card)}</div>
+                <div className="flashcard-sub">{chordName(card)}</div>
                 {notesFace}
               </>
             ) : (
               <>
                 {nameFace}
-                <ToneList triad={card} size="small" />
+                <ToneList chord={card} size="small" />
               </>
             )}
           </div>

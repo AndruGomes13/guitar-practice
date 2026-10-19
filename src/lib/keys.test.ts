@@ -9,10 +9,10 @@ import {
   romanNumeral,
   scaleNotes,
 } from './keys';
-import { noteName, triadSymbol } from './music';
+import { noteName, chordSymbol } from './music';
 
 const chords = (id: string, majorVInMinor = false) =>
-  diatonicChords(keyById(id), { majorVInMinor }).map((c) => triadSymbol(c.triad));
+  diatonicChords(keyById(id), { majorVInMinor }).map((c) => chordSymbol(c.chord));
 const numerals = (id: string, majorVInMinor = false) =>
   diatonicChords(keyById(id), { majorVInMinor }).map((c) => c.numeral);
 

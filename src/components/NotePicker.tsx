@@ -1,6 +1,7 @@
 import { FLAT_NAMES, SHARP_NAMES, type Spelling } from '../lib/music';
 
-export type KeyState = 'selected' | 'correct' | 'wrong' | 'missed' | 'root' | 'third' | 'fifth';
+export type KeyState =
+  'selected' | 'correct' | 'wrong' | 'missed' | 'root' | 'third' | 'fifth' | 'seventh';
 
 interface Props {
   states?: Partial<Record<number, KeyState>>;

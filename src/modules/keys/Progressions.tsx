@@ -3,7 +3,7 @@ import { playChords } from '../../audio/synth';
 import { PlayIcon } from '../../components/icons';
 import { NotePicker, type KeyState } from '../../components/NotePicker';
 import { keyById, keyName } from '../../lib/keys';
-import { pcName, pitchClassOf, triadMidis, triadSymbol } from '../../lib/music';
+import { pcName, pitchClassOf, chordMidis, chordSymbol } from '../../lib/music';
 import { recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import {
@@ -33,7 +33,7 @@ export function Progressions({ settings }: { settings: KeySettings }) {
   const done = filled === slots.length;
   const perfect = misses === 0 && !revealed;
   const current = done ? null : slots[filled];
-  const hear = () => playChords(slots.map((c) => triadMidis(c.triad)));
+  const hear = () => playChords(slots.map((c) => chordMidis(c.chord)));
 
   const fillSlot = (viaReveal: boolean) => {
     const nowFilled = filled + 1;
@@ -49,7 +49,7 @@ export function Progressions({ settings }: { settings: KeySettings }) {
 
   const onPick = (pc: number) => {
     if (!current) return;
-    if (pc === pitchClassOf(current.triad.root)) {
+    if (pc === pitchClassOf(current.chord.root)) {
       fillSlot(false);
     } else {
       setWrong(pc);
@@ -93,7 +93,7 @@ export function Progressions({ settings }: { settings: KeySettings }) {
               className={`prog-slot${i < filled ? ' filled' : ''}${i === filled && !done ? ' current' : ''}`}
             >
               <span className="prog-numeral">{c.numeral}</span>
-              <span className="prog-chord">{i < filled ? triadSymbol(c.triad) : '?'}</span>
+              <span className="prog-chord">{i < filled ? chordSymbol(c.chord) : '?'}</span>
             </div>
           ))}
         </div>
@@ -122,7 +122,7 @@ export function Progressions({ settings }: { settings: KeySettings }) {
           <>
             <p className={perfect ? 'feedback-good' : undefined}>
               {perfect ? '✓ ' : 'The chords: '}
-              {slots.map((c) => triadSymbol(c.triad)).join(' – ')}
+              {slots.map((c) => chordSymbol(c.chord)).join(' – ')}
             </p>
             <div className="button-row">
               <button type="button" className="btn btn-secondary" onClick={hear}>

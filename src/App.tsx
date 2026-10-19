@@ -5,7 +5,7 @@ import { href, useRoute } from './router';
 
 export default function App() {
   const [moduleId, tab] = useRoute();
-  const current = MODULES.find((m) => m.id === moduleId);
+  const current = MODULES.find((m) => m.id === moduleId || m.aliases?.includes(moduleId));
   const ModuleComponent = current?.component;
 
   return (

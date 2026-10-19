@@ -1,13 +1,13 @@
-import { noteName, TRIAD_QUALITIES, type Triad } from '../lib/music';
+import { CHORD_QUALITIES, noteName, type Chord } from '../lib/music';
 
-const TONE_CLASSES = ['root', 'third', 'fifth'] as const;
+const TONE_CLASSES = ['root', 'third', 'fifth', 'seventh'] as const;
 
-/** The three chord tones, colored by their role (root, third, fifth). */
-export function ToneList({ triad, size = 'large' }: { triad: Triad; size?: 'large' | 'small' }) {
-  const { degrees } = TRIAD_QUALITIES[triad.quality];
+/** The chord tones, colored by their role (root, third, fifth, seventh). */
+export function ToneList({ chord, size = 'large' }: { chord: Chord; size?: 'large' | 'small' }) {
+  const { degrees } = CHORD_QUALITIES[chord.quality];
   return (
     <div className={`tones tones-${size}`}>
-      {triad.tones.map((tone, i) => (
+      {chord.tones.map((tone, i) => (
         <div key={i} className={`tone tone-${TONE_CLASSES[i]}`}>
           <span className="tone-name">{noteName(tone)}</span>
           <span className="tone-degree">{degrees[i]}</span>

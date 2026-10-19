@@ -7,7 +7,7 @@ import { NotePicker, type KeyState } from '../../components/NotePicker';
 import { StatsStrip } from '../../components/StatsStrip';
 import { useTimeout } from '../../lib/hooks';
 import { keyById, keyName } from '../../lib/keys';
-import { noteName, pcName, pitchClassOf, triadMidis, triadSymbol } from '../../lib/music';
+import { noteName, pcName, pitchClassOf, chordMidis, chordSymbol } from '../../lib/music';
 import { groupStats, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import {
@@ -37,8 +37,8 @@ export function Quiz({ settings }: { settings: KeySettings }) {
   const key = keyById(question.keyId);
   const chords = chordsOf(key, settings);
   const chord = chords[question.degree];
-  const symbol = triadSymbol(chord.triad);
-  const rootPc = pitchClassOf(chord.triad.root);
+  const symbol = chordSymbol(chord.chord);
+  const rootPc = pitchClassOf(chord.chord.root);
   const expected = question.ask === 'chord' ? rootPc : question.degree;
   const answered = picked !== null;
   const correct = picked === expected;
@@ -69,7 +69,7 @@ export function Quiz({ settings }: { settings: KeySettings }) {
     if (!correct) keyStates[picked] = 'wrong';
   }
   const numeralChoices = settings.degrees.map((d) => ({ value: d, label: chords[d].numeral }));
-  const notes = chord.triad.tones.map(noteName).join(' ');
+  const notes = chord.chord.tones.map(noteName).join(' ');
   const wrongAnswer =
     picked === null
       ? ''
@@ -126,7 +126,7 @@ export function Quiz({ settings }: { settings: KeySettings }) {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => playChords([triadMidis(chord.triad)])}
+                onClick={() => playChords([chordMidis(chord.chord)])}
               >
                 <PlayIcon width={18} height={18} /> Hear it
               </button>

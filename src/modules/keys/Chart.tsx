@@ -12,7 +12,7 @@ import {
   scaleNotes,
   type KeyMode,
 } from '../../lib/keys';
-import { noteName, triadMidis, triadSymbol } from '../../lib/music';
+import { noteName, chordMidis, chordSymbol } from '../../lib/music';
 import { usePersistentState } from '../../lib/usePersistentState';
 
 /** Pick a key and see (and hear) its seven chords. */
@@ -66,13 +66,13 @@ export function Chart({ majorVInMinor }: { majorVInMinor: boolean }) {
             <button
               key={c.degree}
               type="button"
-              className={`degree-card quality-${c.triad.quality}`}
-              onClick={() => playChords([triadMidis(c.triad)])}
-              aria-label={`${c.numeral}: ${triadSymbol(c.triad)}. Tap to hear it.`}
+              className={`degree-card quality-${c.chord.quality}`}
+              onClick={() => playChords([chordMidis(c.chord)])}
+              aria-label={`${c.numeral}: ${chordSymbol(c.chord)}. Tap to hear it.`}
             >
               <span className="degree-numeral">{c.numeral}</span>
-              <span className="degree-chord">{triadSymbol(c.triad)}</span>
-              <span className="degree-notes">{c.triad.tones.map(noteName).join(' ')}</span>
+              <span className="degree-chord">{chordSymbol(c.chord)}</span>
+              <span className="degree-notes">{c.chord.tones.map(noteName).join(' ')}</span>
             </button>
           ))}
         </div>

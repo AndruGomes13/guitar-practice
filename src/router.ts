@@ -9,7 +9,7 @@ function subscribe(onChange: () => void) {
 
 const getHash = () => window.location.hash;
 
-/** Current route as path segments, e.g. "#/triads/build" -> ["triads", "build"]. */
+/** Current route as path segments, e.g. "#/chords/build" -> ["chords", "build"]. */
 export function useRoute(): string[] {
   const hash = useSyncExternalStore(subscribe, getHash);
   return hash.replace(/^#\/?/, '').split('/').filter(Boolean);
