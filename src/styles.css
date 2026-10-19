@@ -1094,6 +1094,98 @@ h3 {
   gap: 8px;
 }
 
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shape-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+
+.shape-card:active {
+  transform: scale(0.97);
+}
+
+.chord-diagram {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+}
+
+.cd-string,
+.cd-fret {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.cd-nut {
+  stroke: var(--text);
+  stroke-width: 4;
+}
+
+.cd-fret-label,
+.cd-mark,
+.cd-dot text {
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.cd-fret-label {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.cd-mark {
+  fill: var(--muted);
+  font-size: 13px;
+}
+
+.cd-open {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2;
+}
+
+.cd-barre {
+  fill: color-mix(in srgb, var(--root) 35%, transparent);
+}
+
+.cd-dot circle {
+  fill: var(--c);
+}
+
+.cd-dot text {
+  fill: #111;
+  font-size: 8.5px;
+  font-weight: 800;
+}
+
+.shape-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.shape-sub {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.shape-hint {
+  margin: 10px 0 0;
+}
+
 .root-picker {
   display: flex;
   flex-direction: column;

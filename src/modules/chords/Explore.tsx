@@ -1,8 +1,10 @@
-import { playArpeggioThenChord } from '../../audio/synth';
+import { playArpeggioThenChord, playChords } from '../../audio/synth';
+import { ChordDiagram } from '../../components/ChordDiagram';
 import { Fretboard, type FretMarker } from '../../components/Fretboard';
 import { PlayIcon } from '../../components/icons';
 import { NotePicker, type KeyState } from '../../components/NotePicker';
-import { positionsOfPc } from '../../lib/guitar';
+import { positionsOfPc, STANDARD_TUNING } from '../../lib/guitar';
+import { chordVoicings, voicingMidis } from '../../lib/shapes';
 import {
   buildChord,
   noteName,
@@ -99,6 +101,30 @@ export function Explore() {
         <ToneList chord={chord} />
         <p className="muted formula">{info.formula}</p>
         <NotePicker states={keyStates} />
+      </section>
+
+      <section className="card">
+        <h3 className="card-title">Common shapes</h3>
+        <div className="shape-grid">
+          {chordVoicings(chord).map((v) => (
+            <button
+              key={v.shape.name}
+              type="button"
+              className="shape-card"
+              onClick={() => playChords([voicingMidis(v)])}
+            >
+              <ChordDiagram voicing={v} chord={chord} />
+              <span className="shape-name">{v.shape.name}</span>
+              <span className="shape-sub">
+                Root: {STANDARD_TUNING[v.shape.rootString].ordinal} string
+              </span>
+              <span className="shape-sub">{v.rootFret > 0 ? `Fret ${v.rootFret}` : 'Open'}</span>
+            </button>
+          ))}
+        </div>
+        <p className="muted small center shape-hint">
+          Tap a shape to hear it. Dots show each note’s degree; × means don’t play that string.
+        </p>
       </section>
 
       <section className="card">

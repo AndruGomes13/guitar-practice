@@ -10,6 +10,8 @@ it can be added to your phone's home screen like an app.
 - **Explore**: pick a root and a quality to see the chord's notes with correct spelling
   (A–C♯–E, not A–D♭–E), where they sit on the neck, and to hear the chord. Covers triads
   (major, minor, diminished, augmented) and 7th chords (maj7, 7, m7, m7♭5, °7).
+  Common movable shapes (E, A and D shapes, rooted on the 6th, 5th and 4th strings) are drawn
+  as chord diagrams with each note's degree; tap one to hear it.
 - **Build**: you're shown a chord name and tap its notes on a piano-style picker.
 - **Flashcards**: flip-card drill. You can show the chord name first or the notes first.
 
@@ -105,6 +107,7 @@ src/
     music.ts           Notes, spelling, chords (triads and 7ths)
     intervals.ts       Interval names and spelling (C–E♭, not C–D♯)
     keys.ts            Scales, diatonic chords and Roman numerals for every key
+    shapes.ts          Movable chord shapes (E/A/D shapes) for every chord type
     guitar.ts          Tuning and fretboard positions
     pitch.ts           Pitch analysis (McLeod method via `pitchy`) and note-onset tracking
     stats.ts           Per-item stats and weighted "practice what you're weak at" picking
