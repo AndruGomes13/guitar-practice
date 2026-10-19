@@ -189,12 +189,20 @@ export function triadMidis(triad: Triad): number[] {
  * All triads for the given qualities. Chords that would need double sharps or
  * double flats (e.g. D♯ major = D♯–F𝄪–A♯) are left out to keep practice sane.
  */
-export function triadPool(qualities: readonly TriadQuality[], accidentalRoots: boolean): Triad[] {
+export interface RootOptions {
+  /** Include sharp roots (C♯, F♯…). */
+  sharps: boolean;
+  /** Include flat roots (B♭, E♭…). */
+  flats: boolean;
+}
+
+export function triadPool(qualities: readonly TriadQuality[], roots: RootOptions): Triad[] {
   const pool: Triad[] = [];
   for (const quality of qualities) {
     for (const rootName of ROOT_NAMES) {
       const root = parseNote(rootName);
-      if (!accidentalRoots && root.accidental !== 0) continue;
+      if (root.accidental > 0 && !roots.sharps) continue;
+      if (root.accidental < 0 && !roots.flats) continue;
       const triad = buildTriad(root, quality);
       if (triad.tones.every((t) => Math.abs(t.accidental) <= 1)) pool.push(triad);
     }

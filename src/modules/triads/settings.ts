@@ -2,15 +2,18 @@ import type { TriadQuality } from '../../lib/music';
 
 export interface TriadSettings {
   qualities: TriadQuality[];
-  /** Include roots like F♯ and B♭, not just C D E F G A B. */
-  accidentalRoots: boolean;
+  /** Include sharp roots (C♯, F♯…) besides C D E F G A B. */
+  sharpRoots: boolean;
+  /** Include flat roots (B♭, E♭…). */
+  flatRoots: boolean;
   /** What the flashcard shows first. */
   cardFront: 'name' | 'notes';
 }
 
 export const DEFAULT_TRIAD_SETTINGS: TriadSettings = {
   qualities: ['major', 'minor'],
-  accidentalRoots: true,
+  sharpRoots: true,
+  flatRoots: false,
   cardFront: 'name',
 };
 

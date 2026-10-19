@@ -29,7 +29,7 @@ export const DEFAULT_FRETBOARD_SETTINGS: FretboardSettings = {
   minFret: 0,
   maxFret: 12,
   naturalsOnly: false,
-  spelling: 'both',
+  spelling: 'sharp',
   scope: 'string',
   showAnswer: true,
   micSensitivity: 'high',

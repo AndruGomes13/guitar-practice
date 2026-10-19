@@ -68,7 +68,10 @@ describe('triads', () => {
   });
 
   it('builds a pool without double accidentals', () => {
-    const pool = triadPool(['major', 'minor', 'diminished', 'augmented'], true);
+    const pool = triadPool(['major', 'minor', 'diminished', 'augmented'], {
+      sharps: true,
+      flats: true,
+    });
     expect(pool.length).toBeGreaterThan(40);
     for (const t of pool) {
       for (const tone of t.tones) expect(Math.abs(tone.accidental)).toBeLessThanOrEqual(1);
@@ -76,8 +79,15 @@ describe('triads', () => {
     expect(pool.some((t) => t.id === 'D♯-major')).toBe(false);
   });
 
+  it('can include sharp roots without flat ones', () => {
+    const roots = triadPool(['major'], { sharps: true, flats: false }).map((t) => noteName(t.root));
+    expect(roots).toContain('F♯');
+    expect(roots).toContain('C♯');
+    expect(roots.some((r) => r.includes('♭'))).toBe(false);
+  });
+
   it('can limit the pool to natural roots', () => {
-    const pool = triadPool(['major'], false);
+    const pool = triadPool(['major'], { sharps: false, flats: false });
     expect(pool.map(triadSymbol)).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
   });
 });

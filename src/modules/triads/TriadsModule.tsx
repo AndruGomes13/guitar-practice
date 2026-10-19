@@ -24,11 +24,13 @@ export default function TriadsModule({ tab }: ModuleProps) {
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pool = useMemo(
-    () => triadPool(settings.qualities, settings.accidentalRoots),
-    [settings.qualities, settings.accidentalRoots],
+    () => triadPool(settings.qualities, { sharps: settings.sharpRoots, flats: settings.flatRoots }),
+    [settings.qualities, settings.sharpRoots, settings.flatRoots],
   );
   // Remount the quiz when the chord pool changes so it picks a fresh chord.
-  const poolKey = `${settings.qualities.join(',')}|${settings.accidentalRoots}`;
+  const poolKey = `${settings.qualities.join(',')}|${settings.sharpRoots}|${settings.flatRoots}`;
+  // Without flat roots, label the piano's black keys as sharps only (C♯ rather than C♯/D♭).
+  const spelling = settings.flatRoots ? 'both' : 'sharp';
 
   return (
     <>
@@ -39,7 +41,7 @@ export default function TriadsModule({ tab }: ModuleProps) {
         onOpenSettings={active === 'explore' ? undefined : () => setSettingsOpen(true)}
       />
       {active === 'explore' && <Explore />}
-      {active === 'build' && <Build key={poolKey} pool={pool} />}
+      {active === 'build' && <Build key={poolKey} pool={pool} spelling={spelling} />}
       {active === 'cards' && <Flashcards key={poolKey} pool={pool} front={settings.cardFront} />}
 
       <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Triad practice">
@@ -84,15 +86,23 @@ function TriadSettingsForm({ settings, onChange, poolSize }: FormProps) {
         </div>
       </Field>
       <Field label="Roots">
-        <Segmented
-          label="Roots"
-          value={settings.accidentalRoots ? 'all' : 'natural'}
-          onChange={(v) => onChange({ ...settings, accidentalRoots: v === 'all' })}
-          options={[
-            { value: 'natural', label: 'C D E F G A B' },
-            { value: 'all', label: 'Include ♯ / ♭' },
-          ]}
-        />
+        <div className="chip-row">
+          <Chip checked disabled onChange={() => {}}>
+            C D E F G A B
+          </Chip>
+          <Chip
+            checked={settings.sharpRoots}
+            onChange={(on) => onChange({ ...settings, sharpRoots: on })}
+          >
+            ♯ Sharps (C♯, F♯…)
+          </Chip>
+          <Chip
+            checked={settings.flatRoots}
+            onChange={(on) => onChange({ ...settings, flatRoots: on })}
+          >
+            ♭ Flats (B♭, E♭…)
+          </Chip>
+        </div>
       </Field>
       <Field label="Flashcard front">
         <Segmented

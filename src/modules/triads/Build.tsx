@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { NotePicker, type KeyState } from '../../components/NotePicker';
 import { useTimeout } from '../../lib/hooks';
-import { triadName, triadPitchClasses, triadSymbol, type Triad } from '../../lib/music';
+import {
+  triadName,
+  triadPitchClasses,
+  triadSymbol,
+  type Spelling,
+  type Triad,
+} from '../../lib/music';
 import { pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { ToneList } from '../../components/ToneList';
@@ -15,7 +21,7 @@ interface Score {
 }
 
 /** Shows a chord name; you tap the three notes that make it up. */
-export function Build({ pool }: { pool: readonly Triad[] }) {
+export function Build({ pool, spelling }: { pool: readonly Triad[]; spelling: Spelling }) {
   const [stats, setStats] = usePersistentState<StatsMap>('triads.stats.build', {});
   const [triad, setTriad] = useState(() => pickWeighted(pool, idOf, stats));
   const [picked, setPicked] = useState<number[]>([]);
@@ -74,7 +80,7 @@ export function Build({ pool }: { pool: readonly Triad[] }) {
         <div className="prompt-sub">{triadName(triad)}</div>
       </section>
 
-      <NotePicker states={keyStates} onPick={onPick} />
+      <NotePicker states={keyStates} onPick={onPick} spelling={spelling} />
 
       <div className={`feedback${result === 'wrong' ? ' feedback-sticky' : ''}`} aria-live="polite">
         {result === null ? (
