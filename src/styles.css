@@ -1197,6 +1197,24 @@ h3 {
   margin: 10px 0 0;
 }
 
+.shape-quiz-diagram {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+
+.shape-quiz-diagram .chord-diagram {
+  max-width: 210px;
+}
+
+.tone-hidden {
+  --c: var(--text);
+}
+
+.cd-dot.tone-hidden circle {
+  fill: var(--text);
+}
+
 .note-tokens {
   display: flex;
   flex-wrap: wrap;

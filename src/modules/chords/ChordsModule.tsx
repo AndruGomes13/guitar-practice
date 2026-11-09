@@ -10,19 +10,22 @@ import {
   chordPool,
   type ChordQuality,
 } from '../../lib/music';
+import { shapeQuizItems } from '../../lib/shapes';
 import { usePersistentState } from '../../lib/usePersistentState';
 import type { ModuleProps } from '../types';
 import { Build } from './Build';
 import { Explore } from './Explore';
 import { Flashcards } from './Flashcards';
 import { NameChord } from './NameChord';
+import { NameShape } from './NameShape';
 import { DEFAULT_CHORD_SETTINGS, type ChordSettings } from './settings';
 
 const TABS: TabDef[] = [
   { id: 'explore', label: 'Explore' },
   { id: 'build', label: 'Build' },
   { id: 'name', label: 'Name it' },
-  { id: 'cards', label: 'Flashcards' },
+  { id: 'shapes', label: 'Shapes' },
+  { id: 'cards', label: 'Cards' },
 ];
 
 export default function ChordsModule({ tab }: ModuleProps) {
@@ -39,6 +42,15 @@ export default function ChordsModule({ tab }: ModuleProps) {
   // Settings and stats keep their old "triads.*" storage keys so earlier progress carries over.
   // Remount the quiz when the chord pool changes so it picks a fresh chord.
   const poolKey = `${settings.qualities.join(',')}|${settings.sharpRoots}|${settings.flatRoots}`;
+  const qualities = CHORD_QUALITY_ORDER.filter((q) => settings.qualities.includes(q));
+  const shapeItems = useMemo(
+    () =>
+      shapeQuizItems(
+        pool,
+        settings.shapeKinds === 'both' ? ['open', 'movable'] : [settings.shapeKinds],
+      ),
+    [pool, settings.shapeKinds],
+  );
   // Without flat roots, label the piano's black keys as sharps only (C♯ rather than C♯/D♭).
   const spelling = settings.flatRoots ? 'both' : 'sharp';
 
@@ -56,12 +68,34 @@ export default function ChordsModule({ tab }: ModuleProps) {
         <NameChord
           key={poolKey}
           pool={pool}
-          qualities={CHORD_QUALITY_ORDER.filter((q) => settings.qualities.includes(q))}
+          qualities={qualities}
           spelling={spelling}
           order={settings.nameOrder}
           onOrderChange={(nameOrder) => setSettings({ ...settings, nameOrder })}
         />
       )}
+      {active === 'shapes' &&
+        (shapeItems.length > 0 ? (
+          <NameShape
+            key={`${poolKey}|${settings.shapeKinds}`}
+            items={shapeItems}
+            qualities={qualities}
+            spelling={spelling}
+            kinds={settings.shapeKinds}
+            onKindsChange={(shapeKinds) => setSettings({ ...settings, shapeKinds })}
+          />
+        ) : (
+          <div className="card empty-state">
+            <p>None of the selected chords have shapes of this kind.</p>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setSettings({ ...settings, shapeKinds: 'both' })}
+            >
+              Show all shapes
+            </button>
+          </div>
+        ))}
       {active === 'cards' && <Flashcards key={poolKey} pool={pool} front={settings.cardFront} />}
 
       <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Chord practice">

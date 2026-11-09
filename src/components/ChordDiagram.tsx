@@ -10,8 +10,15 @@ const LEFT = 34; // room for the starting fret number
 const TOP = 24; // room for x / o marks
 const DOT = 8.5;
 
+interface Props {
+  voicing: Voicing;
+  chord: Chord;
+  /** Color the dots by chord tone and label their degrees. Off for quizzes. */
+  reveal?: boolean;
+}
+
 /** A standard chord chart: strings vertical (low E on the left), nut at the top. */
-export function ChordDiagram({ voicing, chord }: { voicing: Voicing; chord: Chord }) {
+export function ChordDiagram({ voicing, chord, reveal = true }: Props) {
   const fretted = voicing.notes.map((n) => n.fret).filter((f) => f > 0);
   const highest = Math.max(0, ...fretted);
   // Open position if everything fits in the first four frets; otherwise start at the lowest fret.
@@ -25,6 +32,7 @@ export function ChordDiagram({ voicing, chord }: { voicing: Voicing; chord: Chor
   const pcs = chordPitchClasses(chord);
   const { degrees } = CHORD_QUALITIES[chord.quality];
   const role = (pc: number) => pcs.indexOf(pc);
+  const toneClass = (pc: number) => (reveal ? `tone-${TONE_CLASSES[role(pc)]}` : 'tone-hidden');
 
   const barre = voicing.shape.barre && voicing.rootFret > 0 ? voicing.shape.barre : null;
 
@@ -33,7 +41,7 @@ export function ChordDiagram({ voicing, chord }: { voicing: Voicing; chord: Chor
       className="chord-diagram"
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label={`${voicing.shape.name}, root at fret ${voicing.rootFret}`}
+      aria-label="Chord diagram"
     >
       {/* Frets (the top line is the nut in open position) */}
       {Array.from({ length: rows + 1 }, (_, i) => (
@@ -63,18 +71,15 @@ export function ChordDiagram({ voicing, chord }: { voicing: Voicing; chord: Chor
       ))}
       {voicing.notes
         .filter((n) => n.fret === 0)
-        .map((n) => {
-          const r = role(pcAt(n));
-          return (
-            <circle
-              key={`o${n.string}`}
-              className={`cd-open tone-${TONE_CLASSES[r]}`}
-              cx={x(n.string)}
-              cy={TOP - 10}
-              r={5}
-            />
-          );
-        })}
+        .map((n) => (
+          <circle
+            key={`o${n.string}`}
+            className={`cd-open ${toneClass(pcAt(n))}`}
+            cx={x(n.string)}
+            cy={TOP - 10}
+            r={5}
+          />
+        ))}
 
       {barre ? (
         <rect
@@ -93,11 +98,13 @@ export function ChordDiagram({ voicing, chord }: { voicing: Voicing; chord: Chor
         .map((n) => {
           const r = role(pcAt(n));
           return (
-            <g key={`${n.string}:${n.fret}`} className={`cd-dot tone-${TONE_CLASSES[r]}`}>
+            <g key={`${n.string}:${n.fret}`} className={`cd-dot ${toneClass(pcAt(n))}`}>
               <circle cx={x(n.string)} cy={y(n.fret)} r={DOT} />
-              <text x={x(n.string)} y={y(n.fret)}>
-                {degrees[r]}
-              </text>
+              {reveal ? (
+                <text x={x(n.string)} y={y(n.fret)}>
+                  {degrees[r]}
+                </text>
+              ) : null}
             </g>
           );
         })}

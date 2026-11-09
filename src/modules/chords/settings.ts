@@ -10,6 +10,8 @@ export interface ChordSettings {
   cardFront: 'name' | 'notes';
   /** Name it: show the notes as root–3rd–5th(–7th), or shuffled. */
   nameOrder: 'ordered' | 'shuffled';
+  /** Shapes: which diagrams to show. */
+  shapeKinds: 'both' | 'open' | 'movable';
 }
 
 export const DEFAULT_CHORD_SETTINGS: ChordSettings = {
@@ -18,6 +20,7 @@ export const DEFAULT_CHORD_SETTINGS: ChordSettings = {
   flatRoots: false,
   cardFront: 'name',
   nameOrder: 'ordered',
+  shapeKinds: 'both',
 };
 
 export const TONE_CLASSES = ['root', 'third', 'fifth', 'seventh'] as const;

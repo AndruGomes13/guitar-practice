@@ -1,5 +1,5 @@
 import { STANDARD_TUNING, midiAt, type FretPosition } from './guitar';
-import { mod12, pitchClassOf, type Chord, type ChordQuality } from './music';
+import { mod12, noteName, parseNote, pitchClassOf, type Chord, type ChordQuality } from './music';
 
 /**
  * A movable chord shape. `offsets` are frets relative to the root's fret, low E
@@ -105,4 +105,116 @@ export function chordVoicings(chord: Chord): Voicing[] {
 /** MIDI notes of a voicing, low to high, for playback. */
 export function voicingMidis(voicing: Voicing): number[] {
   return voicing.notes.map(midiAt);
+}
+
+// ---------------------------------------------------------------------------
+// Open chords and the shape quiz
+// ---------------------------------------------------------------------------
+
+/** A standard open-position voicing: absolute frets low E to high e, null = not played. */
+export interface OpenChord {
+  root: string;
+  quality: ChordQuality;
+  frets: (number | null)[];
+}
+
+export const OPEN_CHORDS: readonly OpenChord[] = [
+  { root: 'C', quality: 'major', frets: [X, 3, 2, 0, 1, 0] },
+  { root: 'A', quality: 'major', frets: [X, 0, 2, 2, 2, 0] },
+  { root: 'G', quality: 'major', frets: [3, 2, 0, 0, 0, 3] },
+  { root: 'E', quality: 'major', frets: [0, 2, 2, 1, 0, 0] },
+  { root: 'D', quality: 'major', frets: [X, X, 0, 2, 3, 2] },
+  { root: 'A', quality: 'minor', frets: [X, 0, 2, 2, 1, 0] },
+  { root: 'E', quality: 'minor', frets: [0, 2, 2, 0, 0, 0] },
+  { root: 'D', quality: 'minor', frets: [X, X, 0, 2, 3, 1] },
+  { root: 'C', quality: 'dom7', frets: [X, 3, 2, 3, 1, 0] },
+  { root: 'A', quality: 'dom7', frets: [X, 0, 2, 0, 2, 0] },
+  { root: 'G', quality: 'dom7', frets: [3, 2, 0, 0, 0, 1] },
+  { root: 'E', quality: 'dom7', frets: [0, 2, 0, 1, 0, 0] },
+  { root: 'D', quality: 'dom7', frets: [X, X, 0, 2, 1, 2] },
+  { root: 'B', quality: 'dom7', frets: [X, 2, 1, 2, 0, 2] },
+  { root: 'A', quality: 'min7', frets: [X, 0, 2, 0, 1, 0] },
+  { root: 'E', quality: 'min7', frets: [0, 2, 0, 0, 0, 0] },
+  { root: 'D', quality: 'min7', frets: [X, X, 0, 2, 1, 1] },
+  { root: 'C', quality: 'maj7', frets: [X, 3, 2, 0, 0, 0] },
+  { root: 'F', quality: 'maj7', frets: [X, X, 3, 2, 1, 0] },
+  { root: 'A', quality: 'maj7', frets: [X, 0, 2, 1, 2, 0] },
+  { root: 'D', quality: 'maj7', frets: [X, X, 0, 2, 2, 2] },
+  { root: 'E', quality: 'maj7', frets: [0, 2, 1, 1, 0, 0] },
+];
+
+/** Turns absolute frets into a voicing (the "shape" here is the open chord itself). */
+function voicingFromFrets(frets: (number | null)[], name: string): Voicing {
+  const notes: FretPosition[] = [];
+  const muted: number[] = [];
+  frets.forEach((fret, string) =>
+    fret === null ? muted.push(string) : notes.push({ string, fret }),
+  );
+  return {
+    shape: { name, rootString: notes[0].string, offsets: frets },
+    notes,
+    muted,
+    rootFret: notes[0].fret,
+  };
+}
+
+/** The same voicing an octave (or any number of frets) higher. */
+function shiftVoicing(v: Voicing, frets: number): Voicing {
+  return {
+    ...v,
+    notes: v.notes.map((n) => ({ string: n.string, fret: n.fret + frets })),
+    rootFret: v.rootFret + frets,
+  };
+}
+
+export type ShapeKind = 'open' | 'movable';
+
+export interface ShapeQuizItem {
+  id: string;
+  chord: Chord;
+  voicing: Voicing;
+  /** "open" if any string rings open; "movable" for fully fretted shapes. */
+  kind: ShapeKind;
+}
+
+/** Highest fret a quiz shape may reach. */
+const MAX_SHAPE_FRET = 15;
+
+/**
+ * Every diagram the shape quiz can show for these chords: the standard open
+ * chords, plus each movable shape at its lowest position and an octave up.
+ */
+export function shapeQuizItems(
+  chords: readonly Chord[],
+  kinds: readonly ShapeKind[],
+): ShapeQuizItem[] {
+  const items = new Map<string, ShapeQuizItem>();
+  const add = (chord: Chord, voicing: Voicing) => {
+    const kind: ShapeKind = voicing.notes.some((n) => n.fret === 0) ? 'open' : 'movable';
+    if (!kinds.includes(kind)) return;
+    const frets = voicing.shape.offsets.map((_, s) => {
+      const note = voicing.notes.find((n) => n.string === s);
+      return note ? note.fret : 'x';
+    });
+    // Keyed by the actual frets, so an E shape at the nut and the open E chord count once.
+    const id = `${chord.id}:${frets.join(',')}`;
+    if (!items.has(id)) items.set(id, { id, chord, voicing, kind });
+  };
+
+  for (const chord of chords) {
+    for (const open of OPEN_CHORDS) {
+      if (
+        open.quality === chord.quality &&
+        noteName(chord.root) === noteName(parseNote(open.root))
+      ) {
+        add(chord, voicingFromFrets(open.frets, 'Open chord'));
+      }
+    }
+    for (const v of chordVoicings(chord)) {
+      add(chord, v);
+      const up = shiftVoicing(v, 12);
+      if (Math.max(...up.notes.map((n) => n.fret)) <= MAX_SHAPE_FRET) add(chord, up);
+    }
+  }
+  return [...items.values()];
 }

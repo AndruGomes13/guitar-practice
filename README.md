@@ -14,8 +14,11 @@ it can be added to your phone's home screen like an app.
   as chord diagrams with each note's degree; tap one to hear it.
 - **Build**: you're shown a chord name and tap its notes on a piano-style picker.
 - **Name it**: you're shown a chord's notes and name the chord (tap the root, then the type).
-  The notes can be in order (1 3 5 7) or shuffled.
-- **Flashcards**: flip-card drill. You can show the chord name first or the notes first.
+  The notes can be in order (root, 3rd, 5th, 7th) or shuffled.
+- **Shapes**: you're shown a chord diagram and name the chord. Includes the standard open
+  chords (C, G, Am, B7, Cmaj7…) and the movable E/A/D shapes for every chord type, all over the
+  neck. Degrees are revealed after you answer.
+- **Cards**: flip-card drill. You can show the chord name first or the notes first.
 
 In the settings, choose which triads and 7th chords to practice, and whether to include sharp
 and/or flat roots.
