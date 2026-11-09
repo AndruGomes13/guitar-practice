@@ -837,6 +837,17 @@ h3 {
   font-size: 0.75rem;
 }
 
+.choice-selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.choice-selected .choice-sub {
+  color: inherit;
+  opacity: 0.8;
+}
+
 .choice-correct {
   border-color: var(--good);
   background: var(--good);
@@ -1184,6 +1195,34 @@ h3 {
 
 .shape-hint {
   margin: 10px 0 0;
+}
+
+.note-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 6px;
+}
+
+.note-token {
+  min-width: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.answer-label {
+  margin: 0 4px -8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .root-picker {

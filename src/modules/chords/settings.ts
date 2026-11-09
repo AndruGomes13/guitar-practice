@@ -8,6 +8,8 @@ export interface ChordSettings {
   flatRoots: boolean;
   /** What the flashcard shows first. */
   cardFront: 'name' | 'notes';
+  /** Name it: show the notes as root–3rd–5th(–7th), or shuffled. */
+  nameOrder: 'ordered' | 'shuffled';
 }
 
 export const DEFAULT_CHORD_SETTINGS: ChordSettings = {
@@ -15,6 +17,7 @@ export const DEFAULT_CHORD_SETTINGS: ChordSettings = {
   sharpRoots: true,
   flatRoots: false,
   cardFront: 'name',
+  nameOrder: 'ordered',
 };
 
 export const TONE_CLASSES = ['root', 'third', 'fifth', 'seventh'] as const;

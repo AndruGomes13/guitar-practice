@@ -15,11 +15,13 @@ import type { ModuleProps } from '../types';
 import { Build } from './Build';
 import { Explore } from './Explore';
 import { Flashcards } from './Flashcards';
+import { NameChord } from './NameChord';
 import { DEFAULT_CHORD_SETTINGS, type ChordSettings } from './settings';
 
 const TABS: TabDef[] = [
   { id: 'explore', label: 'Explore' },
   { id: 'build', label: 'Build' },
+  { id: 'name', label: 'Name it' },
   { id: 'cards', label: 'Flashcards' },
 ];
 
@@ -50,6 +52,16 @@ export default function ChordsModule({ tab }: ModuleProps) {
       />
       {active === 'explore' && <Explore />}
       {active === 'build' && <Build key={poolKey} pool={pool} spelling={spelling} />}
+      {active === 'name' && (
+        <NameChord
+          key={poolKey}
+          pool={pool}
+          qualities={CHORD_QUALITY_ORDER.filter((q) => settings.qualities.includes(q))}
+          spelling={spelling}
+          order={settings.nameOrder}
+          onOrderChange={(nameOrder) => setSettings({ ...settings, nameOrder })}
+        />
+      )}
       {active === 'cards' && <Flashcards key={poolKey} pool={pool} front={settings.cardFront} />}
 
       <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Chord practice">

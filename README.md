@@ -13,6 +13,8 @@ it can be added to your phone's home screen like an app.
   Common movable shapes (E, A and D shapes, rooted on the 6th, 5th and 4th strings) are drawn
   as chord diagrams with each note's degree; tap one to hear it.
 - **Build**: you're shown a chord name and tap its notes on a piano-style picker.
+- **Name it**: you're shown a chord's notes and name the chord (tap the root, then the type).
+  The notes can be in order (1 3 5 7) or shuffled.
 - **Flashcards**: flip-card drill. You can show the chord name first or the notes first.
 
 In the settings, choose which triads and 7th chords to practice, and whether to include sharp

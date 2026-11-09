@@ -1,4 +1,4 @@
-export type ChoiceState = 'correct' | 'wrong';
+export type ChoiceState = 'selected' | 'correct' | 'wrong';
 
 export interface Choice<T> {
   value: T;

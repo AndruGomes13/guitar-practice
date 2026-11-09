@@ -231,6 +231,16 @@ export function chordPitchClasses(chord: Chord): number[] {
   return chord.tones.map(pitchClassOf);
 }
 
+/**
+ * Whether a root (pitch class) and quality give exactly the chord's notes. Symmetric
+ * chords match from several roots: C+ has the same notes as E+ and G♯+.
+ */
+export function matchesChord(rootPc: number, quality: ChordQuality, chord: Chord): boolean {
+  const answer = new Set(CHORD_QUALITIES[quality].semitones.map((s) => mod12(rootPc + s)));
+  const actual = new Set(chordPitchClasses(chord));
+  return answer.size === actual.size && [...answer].every((pc) => actual.has(pc));
+}
+
 /** A close, root-position voicing for playback, with the root between C3 and B3. */
 export function chordMidis(chord: Chord): number[] {
   const root = 48 + pitchClassOf(chord.root);

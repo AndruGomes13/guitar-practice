@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildChord,
   frequencyToMidi,
+  matchesChord,
   noteName,
   parseNote,
   pcName,
@@ -79,6 +80,19 @@ describe('triads', () => {
     expect(pool.some((c) => c.id === 'C-dim7')).toBe(false);
     expect(pool.some((c) => c.id === 'B-dim7')).toBe(true);
     expect(pool.every((c) => c.tones.length === 4)).toBe(true);
+  });
+
+  it('matches a chord by root and quality, including symmetric chords', () => {
+    const g7 = buildChord(parseNote('G'), 'dom7');
+    expect(matchesChord(7, 'dom7', g7)).toBe(true);
+    expect(matchesChord(7, 'maj7', g7)).toBe(false);
+    expect(matchesChord(2, 'dom7', g7)).toBe(false);
+    // C+ = E+ = G♯+; B°7 = D°7 = F°7 = A♭°7.
+    const cAug = buildChord(parseNote('C'), 'augmented');
+    expect([0, 4, 8].every((pc) => matchesChord(pc, 'augmented', cAug))).toBe(true);
+    const bDim7 = buildChord(parseNote('B'), 'dim7');
+    expect([11, 2, 5, 8].every((pc) => matchesChord(pc, 'dim7', bDim7))).toBe(true);
+    expect(matchesChord(0, 'dim7', bDim7)).toBe(false);
   });
 
   it('names triads', () => {
