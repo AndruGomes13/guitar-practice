@@ -20,8 +20,10 @@ it can be added to your phone's home screen like an app.
   neck. Degrees are revealed after you answer.
 - **Cards**: flip-card drill. You can show the chord name first or the notes first.
 
-In the settings, choose which triads and 7th chords to practice, and whether to include sharp
-and/or flat roots.
+In the settings, choose which triads and 7th chords to practice, and which roots: naturals,
+sharps and/or flats (e.g. sharps only, to focus on them). Name it and Shapes always name notes
+the way you read them off the neck, with naturals and sharps only (F rather than E♯, A♯ rather
+than B♭).
 
 **Fretboard notes**
 
@@ -45,6 +47,8 @@ range, naturals only, and sharps/flats.
   interval. You can ask for intervals going up, down, or both.
 - **Ear**: two notes are played (going up, going down, or together) and you name the
   interval. After a miss you can replay it and hear what your answer would have sounded like.
+- **Explore**: pick a root string (or tap the neck) and one or more intervals, and every
+  position of those intervals around the root is shown.
 
 Choose which intervals to practice in the settings. Start with a few (the "Beginner set" is
 m3, M3, P4, P5, P8) and add more as they get easy.

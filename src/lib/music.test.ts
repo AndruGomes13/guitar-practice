@@ -3,6 +3,7 @@ import {
   buildChord,
   frequencyToMidi,
   matchesChord,
+  simpleName,
   noteName,
   parseNote,
   pcName,
@@ -75,7 +76,7 @@ describe('triads', () => {
   });
 
   it('includes 7th chords in the pool, without double accidentals', () => {
-    const pool = chordPool(['dim7'], { sharps: true, flats: true });
+    const pool = chordPool(['dim7'], { naturals: true, sharps: true, flats: true });
     // C°7 needs B𝄫, so it's left out; B°7 (B D F A♭) is in.
     expect(pool.some((c) => c.id === 'C-dim7')).toBe(false);
     expect(pool.some((c) => c.id === 'B-dim7')).toBe(true);
@@ -104,6 +105,7 @@ describe('triads', () => {
 
   it('builds a pool without double accidentals', () => {
     const pool = chordPool(['major', 'minor', 'diminished', 'augmented'], {
+      naturals: true,
       sharps: true,
       flats: true,
     });
@@ -115,15 +117,37 @@ describe('triads', () => {
   });
 
   it('can include sharp roots without flat ones', () => {
-    const roots = chordPool(['major'], { sharps: true, flats: false }).map((t) => noteName(t.root));
+    const roots = chordPool(['major'], { naturals: true, sharps: true, flats: false }).map((t) =>
+      noteName(t.root),
+    );
     expect(roots).toContain('F♯');
     expect(roots).toContain('C♯');
     expect(roots.some((r) => r.includes('♭'))).toBe(false);
   });
 
+  it('can practice sharp roots only', () => {
+    const roots = chordPool(['major', 'minor'], {
+      naturals: false,
+      sharps: true,
+      flats: false,
+    }).map((c) => noteName(c.root));
+    expect(roots.length).toBeGreaterThan(0);
+    expect(roots.every((r) => r.includes('♯'))).toBe(true);
+  });
+
+  it('simplifies spellings for reading off the neck', () => {
+    // F♯ major is F♯ A♯ C♯; A♯ minor contains E♯, which reads as F.
+    const aSharpMinor = buildChord(parseNote('A#'), 'minor');
+    expect(aSharpMinor.tones.map(simpleName)).toEqual(['A♯', 'C♯', 'F']);
+    const bFlat = buildChord(parseNote('Bb'), 'dom7');
+    expect(chordSymbol(bFlat, true)).toBe('A♯7');
+    expect(chordName(bFlat, true)).toBe('A♯ dominant 7th');
+    expect(chordSymbol(bFlat)).toBe('B♭7');
+  });
+
   it('can limit the pool to natural roots', () => {
-    const pool = chordPool(['major'], { sharps: false, flats: false });
-    expect(pool.map(chordSymbol)).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+    const pool = chordPool(['major'], { naturals: true, sharps: false, flats: false });
+    expect(pool.map((c) => chordSymbol(c))).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
   });
 });
 

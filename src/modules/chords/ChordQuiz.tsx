@@ -14,7 +14,6 @@ import {
   pitchClassOf,
   type Chord,
   type ChordQuality,
-  type Spelling,
 } from '../../lib/music';
 import { pickWeighted, recordResult, type StatsMap } from '../../lib/stats';
 import { usePersistentState } from '../../lib/usePersistentState';
@@ -36,7 +35,6 @@ interface Props<T extends ChordQuizItem> {
   statsKey: string;
   /** Chord types offered as answers. */
   qualities: readonly ChordQuality[];
-  spelling: Spelling;
   kicker: string;
   /** On-screen options shown above the question. */
   controls?: ReactNode;
@@ -54,13 +52,13 @@ const makeQuestion = <T,>(item: T): Question<T> => ({
 
 /**
  * "Which chord is this?" — shows something about a chord (its notes, a shape)
- * and you answer with the root, then the chord type.
+ * and you answer with the root, then the chord type. Notes and chords are named
+ * the way you'd read them off the neck: naturals and sharps only (F, not E♯).
  */
 export function ChordQuiz<T extends ChordQuizItem>({
   items,
   statsKey,
   qualities,
-  spelling,
   kicker,
   controls,
   renderPrompt,
@@ -80,10 +78,9 @@ export function ChordQuiz<T extends ChordQuizItem>({
   const { item } = question;
   const { chord } = item;
   const rootPc = pitchClassOf(chord.root);
-  const labelSpelling = spelling === 'flat' ? 'flat' : 'sharp';
   const answerSymbol =
     root !== null && quality !== null
-      ? pcName(root, labelSpelling) + CHORD_QUALITIES[quality].symbol
+      ? pcName(root, 'sharp') + CHORD_QUALITIES[quality].symbol
       : '';
 
   const next = (currentStats: StatsMap) => {
@@ -160,7 +157,7 @@ export function ChordQuiz<T extends ChordQuizItem>({
       </section>
 
       <div className="answer-label">Root</div>
-      <NotePicker states={keyStates} onPick={onRoot} spelling={spelling} />
+      <NotePicker states={keyStates} onPick={onRoot} spelling="sharp" />
       <div className="answer-label">Type</div>
       <ChoiceGrid
         label="Chord type"
@@ -174,7 +171,7 @@ export function ChordQuiz<T extends ChordQuizItem>({
         {result === null ? null : result === 'correct' ? (
           <>
             <p className="feedback-good">
-              ✓ {chordSymbol(chord)} ({chordName(chord)})
+              ✓ {chordSymbol(chord, true)} ({chordName(chord, true)})
             </p>
             {otherRoot ? (
               <p className="muted small">
@@ -186,10 +183,10 @@ export function ChordQuiz<T extends ChordQuizItem>({
         ) : (
           <>
             <p className="feedback-bad">
-              It’s {chordSymbol(chord)} ({chordName(chord)}), not {answerSymbol}.
+              It’s {chordSymbol(chord, true)} ({chordName(chord, true)}), not {answerSymbol}.
             </p>
             {renderDetails?.(item)}
-            <ToneList chord={chord} size="small" />
+            <ToneList chord={chord} size="small" simple />
             <div className="button-row">
               <button type="button" className="btn btn-secondary" onClick={() => hear(item)}>
                 <PlayIcon width={18} height={18} /> Hear it

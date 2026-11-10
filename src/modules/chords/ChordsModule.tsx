@@ -36,12 +36,22 @@ export default function ChordsModule({ tab }: ModuleProps) {
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pool = useMemo(
-    () => chordPool(settings.qualities, { sharps: settings.sharpRoots, flats: settings.flatRoots }),
-    [settings.qualities, settings.sharpRoots, settings.flatRoots],
+    () =>
+      chordPool(settings.qualities, {
+        naturals: settings.naturalRoots,
+        sharps: settings.sharpRoots,
+        flats: settings.flatRoots,
+      }),
+    [settings.qualities, settings.naturalRoots, settings.sharpRoots, settings.flatRoots],
   );
   // Settings and stats keep their old "triads.*" storage keys so earlier progress carries over.
   // Remount the quiz when the chord pool changes so it picks a fresh chord.
-  const poolKey = `${settings.qualities.join(',')}|${settings.sharpRoots}|${settings.flatRoots}`;
+  const poolKey = [
+    settings.qualities.join(','),
+    settings.naturalRoots,
+    settings.sharpRoots,
+    settings.flatRoots,
+  ].join('|');
   const qualities = CHORD_QUALITY_ORDER.filter((q) => settings.qualities.includes(q));
   const shapeItems = useMemo(
     () =>
@@ -69,7 +79,6 @@ export default function ChordsModule({ tab }: ModuleProps) {
           key={poolKey}
           pool={pool}
           qualities={qualities}
-          spelling={spelling}
           order={settings.nameOrder}
           onOrderChange={(nameOrder) => setSettings({ ...settings, nameOrder })}
         />
@@ -80,7 +89,6 @@ export default function ChordsModule({ tab }: ModuleProps) {
             key={`${poolKey}|${settings.shapeKinds}`}
             items={shapeItems}
             qualities={qualities}
-            spelling={spelling}
             kinds={settings.shapeKinds}
             onKindsChange={(shapeKinds) => setSettings({ ...settings, shapeKinds })}
           />
@@ -104,6 +112,12 @@ export default function ChordsModule({ tab }: ModuleProps) {
     </>
   );
 }
+
+const ROOT_GROUPS = [
+  { key: 'naturalRoots', label: 'C D E F G A B' },
+  { key: 'sharpRoots', label: '♯ Sharps (C♯, F♯…)' },
+  { key: 'flatRoots', label: '♭ Flats (B♭, E♭…)' },
+] as const;
 
 interface FormProps {
   settings: ChordSettings;
@@ -144,21 +158,17 @@ function ChordSettingsForm({ settings, onChange, poolSize }: FormProps) {
       </Field>
       <Field label="Roots">
         <div className="chip-row">
-          <Chip checked disabled onChange={() => {}}>
-            C D E F G A B
-          </Chip>
-          <Chip
-            checked={settings.sharpRoots}
-            onChange={(on) => onChange({ ...settings, sharpRoots: on })}
-          >
-            ♯ Sharps (C♯, F♯…)
-          </Chip>
-          <Chip
-            checked={settings.flatRoots}
-            onChange={(on) => onChange({ ...settings, flatRoots: on })}
-          >
-            ♭ Flats (B♭, E♭…)
-          </Chip>
+          {ROOT_GROUPS.map(({ key, label }) => (
+            <Chip
+              key={key}
+              checked={settings[key]}
+              // Keep at least one group of roots selected.
+              disabled={settings[key] && ROOT_GROUPS.filter((g) => settings[g.key]).length === 1}
+              onChange={(on) => onChange({ ...settings, [key]: on })}
+            >
+              {label}
+            </Chip>
+          ))}
         </div>
       </Field>
       <Field label="Flashcard front">

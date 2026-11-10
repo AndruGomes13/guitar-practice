@@ -9,6 +9,7 @@ import { usePersistentState } from '../../lib/usePersistentState';
 import type { ModuleProps } from '../types';
 import { EarIntervals } from './EarIntervals';
 import { FretboardIntervals } from './FretboardIntervals';
+import { IntervalExplorer } from './IntervalExplorer';
 import {
   ALL_INTERVALS,
   BEGINNER_INTERVALS,
@@ -24,15 +25,17 @@ import {
 const TABS: TabDef[] = [
   { id: 'board', label: 'Fretboard' },
   { id: 'ear', label: 'Ear' },
+  { id: 'explore', label: 'Explore' },
 ];
 
 const INTROS: Record<string, string> = {
   board: 'Name the interval from the root (R) to the other note.',
   ear: 'Listen to two notes and name the interval.',
+  explore: 'Pick a root and intervals to see where they sit on the neck.',
 };
 
 export default function IntervalsModule({ tab }: ModuleProps) {
-  const active = resolveTab(TABS, tab) as 'board' | 'ear';
+  const active = resolveTab(TABS, tab) as 'board' | 'ear' | 'explore';
   const [settings, setSettings] = usePersistentState<IntervalSettings>(
     'intervals.settings',
     DEFAULT_INTERVAL_SETTINGS,
@@ -40,14 +43,46 @@ export default function IntervalsModule({ tab }: ModuleProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const openSettings = () => setSettingsOpen(true);
 
+  return (
+    <>
+      <ModuleNav
+        moduleId="intervals"
+        tabs={TABS}
+        active={active}
+        onOpenSettings={active === 'explore' ? undefined : openSettings}
+      />
+      <p className="muted intro">{INTROS[active]}</p>
+
+      {active === 'explore' ? (
+        <IntervalExplorer />
+      ) : (
+        <IntervalPractice active={active} settings={settings} openSettings={openSettings} />
+      )}
+
+      <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Interval practice">
+        <IntervalSettingsForm
+          settings={settings}
+          onChange={setSettings}
+          mode={active === 'ear' ? 'ear' : 'board'}
+        />
+      </Sheet>
+    </>
+  );
+}
+
+interface PracticeProps {
+  active: 'board' | 'ear';
+  settings: IntervalSettings;
+  openSettings: () => void;
+}
+
+/** The Fretboard and Ear quizzes, with a summary of what's being practiced. */
+function IntervalPractice({ active, settings, openSettings }: PracticeProps) {
   const directions = active === 'board' ? settings.boardDirections : settings.earDirections;
   const hasQuestions = active === 'ear' || boardItems(settings).length > 0;
 
   return (
     <>
-      <ModuleNav moduleId="intervals" tabs={TABS} active={active} onOpenSettings={openSettings} />
-      <p className="muted intro">{INTROS[active]}</p>
-
       <SummaryBar
         tags={settings.intervals.map((s) => intervalInfo(s).short)}
         meta={directions.map((d) => DIRECTION_LABELS[d]).join(' · ')}
@@ -66,10 +101,6 @@ export default function IntervalsModule({ tab }: ModuleProps) {
       ) : (
         <EarIntervals key={earKey(settings)} settings={settings} />
       )}
-
-      <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Interval practice">
-        <IntervalSettingsForm settings={settings} onChange={setSettings} mode={active} />
-      </Sheet>
     </>
   );
 }

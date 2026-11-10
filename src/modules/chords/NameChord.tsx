@@ -1,12 +1,6 @@
 import { playArpeggioThenChord } from '../../audio/synth';
 import { Segmented } from '../../components/controls';
-import {
-  chordMidis,
-  noteName,
-  type Chord,
-  type ChordQuality,
-  type Spelling,
-} from '../../lib/music';
+import { chordMidis, simpleName, type Chord, type ChordQuality } from '../../lib/music';
 import { ChordQuiz } from './ChordQuiz';
 import type { ChordSettings } from './settings';
 
@@ -29,20 +23,18 @@ function shuffledOrder(n: number, seed: number): number[] {
 interface Props {
   pool: readonly Chord[];
   qualities: readonly ChordQuality[];
-  spelling: Spelling;
   order: ChordSettings['nameOrder'];
   onOrderChange: (order: ChordSettings['nameOrder']) => void;
 }
 
 /** Shows a chord's notes; you name the chord (root, then type). */
-export function NameChord({ pool, qualities, spelling, order, onOrderChange }: Props) {
+export function NameChord({ pool, qualities, order, onOrderChange }: Props) {
   const items = pool.map((chord) => ({ id: chord.id, chord }));
   return (
     <ChordQuiz
       items={items}
       statsKey="triads.stats.name"
       qualities={qualities}
-      spelling={spelling}
       kicker="Which chord is this?"
       controls={
         <Segmented
@@ -64,7 +56,7 @@ export function NameChord({ pool, qualities, spelling, order, onOrderChange }: P
           <div className="note-tokens">
             {shown.map((tone, i) => (
               <span key={i} className="note-token">
-                {noteName(tone)}
+                {simpleName(tone)}
               </span>
             ))}
           </div>

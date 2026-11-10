@@ -218,13 +218,26 @@ export function buildChord(root: SpelledNote, quality: ChordQuality): Chord {
 }
 
 /** Short symbol like "A♭m", "B°" or "G7". */
-export function chordSymbol(chord: Chord): string {
-  return noteName(chord.root) + CHORD_QUALITIES[chord.quality].symbol;
+export function chordSymbol(chord: Chord, simple = false): string {
+  return rootLabel(chord, simple) + CHORD_QUALITIES[chord.quality].symbol;
 }
 
 /** Long name like "A♭ minor" or "G dominant 7th". */
-export function chordName(chord: Chord): string {
-  return `${noteName(chord.root)} ${CHORD_QUALITIES[chord.quality].label.toLowerCase()}`;
+export function chordName(chord: Chord, simple = false): string {
+  return `${rootLabel(chord, simple)} ${CHORD_QUALITIES[chord.quality].label.toLowerCase()}`;
+}
+
+/** The root as spelled (A♭, E♯), or with `simple`, as a natural or sharp name (G♯, F). */
+function rootLabel(chord: Chord, simple: boolean): string {
+  return simple ? simpleName(chord.root) : noteName(chord.root);
+}
+
+/**
+ * A note as a guitarist reads it off the neck: natural or sharp names only,
+ * so E♯ is F, C♭ is B and B♭ is A♯.
+ */
+export function simpleName(note: SpelledNote): string {
+  return SHARP_NAMES[pitchClassOf(note)];
 }
 
 export function chordPitchClasses(chord: Chord): number[] {
@@ -252,6 +265,8 @@ export function chordMidis(chord: Chord): number[] {
  * double flats (e.g. D♯ major = D♯–F𝄪–A♯) are left out to keep practice sane.
  */
 export interface RootOptions {
+  /** Include natural roots (C D E F G A B). */
+  naturals: boolean;
   /** Include sharp roots (C♯, F♯…). */
   sharps: boolean;
   /** Include flat roots (B♭, E♭…). */
@@ -263,6 +278,7 @@ export function chordPool(qualities: readonly ChordQuality[], roots: RootOptions
   for (const quality of qualities) {
     for (const rootName of ROOT_NAMES) {
       const root = parseNote(rootName);
+      if (root.accidental === 0 && !roots.naturals) continue;
       if (root.accidental > 0 && !roots.sharps) continue;
       if (root.accidental < 0 && !roots.flats) continue;
       const chord = buildChord(root, quality);

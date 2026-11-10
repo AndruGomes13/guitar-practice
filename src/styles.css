@@ -129,6 +129,12 @@ h3 {
   margin: 4px 4px 16px;
 }
 
+.explorer-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .practice-options {
   display: flex;
   flex-direction: column;
@@ -1616,6 +1622,23 @@ div.key {
 
 .fb-marker-seventh circle {
   fill: var(--seventh);
+}
+
+/* Extra interval colors for the interval explorer. */
+.fb-marker-second circle {
+  fill: #94a3b8;
+}
+
+.fb-marker-fourth circle {
+  fill: #2dd4bf;
+}
+
+.fb-marker-tritone circle {
+  fill: #fb7185;
+}
+
+.fb-marker-sixth circle {
+  fill: #a3e635;
 }
 
 .fb-marker-neutral circle {

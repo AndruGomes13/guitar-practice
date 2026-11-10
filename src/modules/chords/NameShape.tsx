@@ -2,7 +2,7 @@ import { playChords } from '../../audio/synth';
 import { ChordDiagram } from '../../components/ChordDiagram';
 import { Segmented } from '../../components/controls';
 import { STANDARD_TUNING } from '../../lib/guitar';
-import type { ChordQuality, Spelling } from '../../lib/music';
+import type { ChordQuality } from '../../lib/music';
 import { voicingMidis, type ShapeQuizItem } from '../../lib/shapes';
 import { ChordQuiz } from './ChordQuiz';
 import type { ChordSettings } from './settings';
@@ -10,7 +10,6 @@ import type { ChordSettings } from './settings';
 interface Props {
   items: readonly ShapeQuizItem[];
   qualities: readonly ChordQuality[];
-  spelling: Spelling;
   kinds: ChordSettings['shapeKinds'];
   onKindsChange: (kinds: ChordSettings['shapeKinds']) => void;
 }
@@ -24,13 +23,12 @@ function describe({ voicing }: ShapeQuizItem): string {
 }
 
 /** Shows a chord shape on the neck; you name the chord. */
-export function NameShape({ items, qualities, spelling, kinds, onKindsChange }: Props) {
+export function NameShape({ items, qualities, kinds, onKindsChange }: Props) {
   return (
     <ChordQuiz
       items={items}
       statsKey="chords.stats.shapes"
       qualities={qualities}
-      spelling={spelling}
       kicker="Which chord is this shape?"
       controls={
         <Segmented

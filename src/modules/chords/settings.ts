@@ -2,7 +2,9 @@ import type { ChordQuality } from '../../lib/music';
 
 export interface ChordSettings {
   qualities: ChordQuality[];
-  /** Include sharp roots (C♯, F♯…) besides C D E F G A B. */
+  /** Include natural roots (C D E F G A B). Turn off to focus on sharps or flats. */
+  naturalRoots: boolean;
+  /** Include sharp roots (C♯, F♯…). */
   sharpRoots: boolean;
   /** Include flat roots (B♭, E♭…). */
   flatRoots: boolean;
@@ -16,6 +18,7 @@ export interface ChordSettings {
 
 export const DEFAULT_CHORD_SETTINGS: ChordSettings = {
   qualities: ['major', 'minor'],
+  naturalRoots: true,
   sharpRoots: true,
   flatRoots: false,
   cardFront: 'name',
