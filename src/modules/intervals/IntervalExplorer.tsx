@@ -1,7 +1,6 @@
 import { Chip } from '../../components/controls';
 import { Fretboard, type FretMarker, type MarkerTone } from '../../components/Fretboard';
 import {
-  MAX_FRET,
   pcAt,
   positionsOfPc,
   samePosition,
@@ -18,15 +17,16 @@ interface ExplorerState {
   intervals: number[];
 }
 
-/** Root at fret 7 leaves five frets of room on either side. */
-const DEFAULT_ROOT_FRET = 7;
+/** The root always sits at fret 7, centered with five frets of room on either side. */
+const ROOT_FRET = 7;
+const REACH = 5;
+const MIN_FRET = ROOT_FRET - REACH;
+const MAX_SHOWN_FRET = ROOT_FRET + REACH;
+
 const DEFAULT_STATE: ExplorerState = {
-  root: { string: 0, fret: DEFAULT_ROOT_FRET },
+  root: { string: 0, fret: ROOT_FRET },
   intervals: [7, 12],
 };
-
-/** Frets shown either side of the root. */
-const REACH = 5;
 
 const ALL_STRINGS = Array.from({ length: STRING_COUNT }, (_, i) => i);
 
@@ -49,23 +49,23 @@ const INTERVAL_TONES: Record<number, MarkerTone> = {
 /** Pick a root and intervals; every place those intervals sit around the root is shown. */
 export function IntervalExplorer() {
   const [state, setState] = usePersistentState<ExplorerState>('intervals.explore', DEFAULT_STATE);
-  const { root, intervals } = state;
-
-  const minFret = Math.max(0, Math.min(root.fret - REACH, MAX_FRET - 2 * REACH));
-  const maxFret = Math.min(MAX_FRET, minFret + 2 * REACH);
+  const { intervals } = state;
+  // Only the string is chosen; the fret stays put so the view never jumps.
+  const root: FretPosition = { string: state.root.string, fret: ROOT_FRET };
   const rootPc = pcAt(root);
 
   const markers: FretMarker[] = [{ ...root, tone: 'root', label: 'R' }];
   for (const semitones of intervals) {
     const { short } = intervalInfo(semitones);
-    for (const pos of positionsOfPc((rootPc + semitones) % 12, ALL_STRINGS, minFret, maxFret)) {
+    const pc = (rootPc + semitones) % 12;
+    for (const pos of positionsOfPc(pc, ALL_STRINGS, MIN_FRET, MAX_SHOWN_FRET)) {
       if (samePosition(pos, root)) continue;
       markers.push({ ...pos, tone: INTERVAL_TONES[semitones], label: short });
     }
   }
 
   const setRootString = (string: number) =>
-    setState({ ...state, root: { string, fret: root.fret } });
+    setState({ ...state, root: { string, fret: ROOT_FRET } });
   const toggleInterval = (semitones: number, on: boolean) =>
     setState({
       ...state,
@@ -107,17 +107,17 @@ export function IntervalExplorer() {
       </section>
 
       <Fretboard
-        minFret={minFret}
-        maxFret={maxFret}
+        minFret={MIN_FRET}
+        maxFret={MAX_SHOWN_FRET}
         markers={markers}
         highlightString={root.string}
-        onTap={(pos) => setState({ ...state, root: pos })}
+        onTap={(pos) => setRootString(pos.string)}
         label="Intervals around the root"
       />
 
       <p className="muted small center">
         Root (R): {pcName(rootPc, 'sharp')}, {STANDARD_TUNING[root.string].name} string, fret{' '}
-        {root.fret}. Tap anywhere on the neck to move the root.
+        {ROOT_FRET}. Tap a string on the neck to move the root there.
       </p>
     </div>
   );
